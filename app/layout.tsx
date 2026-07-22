@@ -1,10 +1,11 @@
 import { ClerkProvider } from '@clerk/nextjs';
+import { UserSync } from "@/components/auth/user-sync";
 import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Next.js Premium Startup Boilerplate",
-  description: "Created using the ultimate interactive Next.js stack generator CLI.",
+  title: "Flowbase - AI-Powered Productivity Workspace",
+  description: "Plan, create, and collaborate in one connected AI workspace.",
 };
 
 export default function RootLayout({
@@ -16,6 +17,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body style={{ margin: 0, padding: 0 }}>
+          <UserSync />
           {children}
         </body>
       </html>
