@@ -226,23 +226,18 @@ export function KanbanWorkspace({
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background p-4 sm:p-6 lg:p-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-background p-4 sm:p-5 lg:px-8 lg:py-5">
       <div className="mx-auto max-w-[1600px]">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
-              <LayoutPanelTop className="size-4" /> Workspace
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-primary">
+            <LayoutPanelTop className="size-5" />
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Kanban / Tasks
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              Move ideas from a gentle plan into progress.
-            </p>
           </div>
           <button
             onClick={() => setBoardDialog(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
           >
             <Plus className="size-4" /> New board
           </button>
@@ -256,7 +251,7 @@ export function KanbanWorkspace({
           </div>
         )}
         <div className="grid min-w-0 gap-5 lg:grid-cols-[248px_minmax(0,1fr)]">
-          <aside className="rounded-2xl border border-border/70 bg-card p-3 shadow-sm lg:min-h-[620px]">
+          <aside className="rounded-2xl border border-border/70 bg-card p-3 shadow-sm lg:min-h-155">
             <div className="mb-3 flex items-center justify-between px-2 pt-1">
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
                 Your boards
@@ -317,7 +312,7 @@ export function KanbanWorkspace({
                     <Plus className="size-4" /> Add column
                   </button>
                 </div>
-                <div className="flex min-h-[510px] gap-4 overflow-x-auto pb-3">
+                <div className="flex min-h-127.5 gap-4 overflow-x-auto pb-3">
                   {boardColumns.map((column) => (
                     <KanbanColumn
                       key={column.id}
@@ -445,7 +440,7 @@ function KanbanColumn({
         const id = Number(event.dataTransfer.getData('taskId'));
         if (id) onDropTask(id, column.id);
       }}
-      className="w-[282px] shrink-0 rounded-2xl bg-secondary/55 p-3 dark:bg-secondary/45"
+      className="w-70.5 shrink-0 rounded-2xl bg-secondary/55 p-3 dark:bg-secondary/45"
     >
       <div className="mb-3 flex items-center gap-2 px-1">
         <GripVertical className="size-4 text-muted-foreground" />
@@ -803,7 +798,7 @@ function Modal({
 }
 function EmptyBoard({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="grid min-h-[520px] place-items-center text-center">
+    <div className="grid min-h-130 place-items-center text-center">
       <div>
         <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-secondary text-primary">
           <ClipboardList className="size-7" />

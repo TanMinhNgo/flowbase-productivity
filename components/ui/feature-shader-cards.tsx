@@ -149,12 +149,12 @@ export default function FeatureShaderCards() {
       id="features"
       className="bg-background px-5 py-24 sm:px-8 lg:px-10 lg:py-32"
     >
-      <div className="mx-auto max-w-[1400px]">
+      <div className="mx-auto max-w-350">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
             Everything connected
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-foreground sm:text-5xl">
+          <h2 className="mt-4 text-3xl font-semibold tracking-tighter text-foreground sm:text-5xl">
             The tools you need, in one place.
           </h2>
           <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
@@ -169,7 +169,7 @@ export default function FeatureShaderCards() {
             return (
               <article
                 key={feature.title}
-                className="group relative min-h-[282px] overflow-hidden rounded-2xl border border-border shadow-lg"
+                className="group relative min-h-70.5 overflow-hidden rounded-2xl border border-border shadow-lg"
               >
                 <Warp
                   className="absolute inset-0 size-full"
@@ -186,7 +186,7 @@ export default function FeatureShaderCards() {
                   colors={[...config.colors]}
                 />
                 <div className="absolute inset-0 bg-foreground/75 transition duration-500 group-hover:bg-foreground/65" />
-                <div className="relative flex h-full min-h-[282px] flex-col p-7 text-primary-foreground sm:p-8">
+                <div className="relative flex h-full min-h-70.5 flex-col p-7 text-primary-foreground sm:p-8">
                   <span className="grid size-11 place-items-center rounded-xl border border-white/25 bg-white/10 shadow-sm backdrop-blur-sm">
                     <Icon size={22} strokeWidth={1.8} />
                   </span>

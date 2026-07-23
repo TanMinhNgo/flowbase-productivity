@@ -98,7 +98,7 @@ export default function ScrollExpandMedia({
   return (
     <section
       id="top"
-      className="relative min-h-[100dvh] overflow-x-hidden bg-background"
+      className="relative min-h-dvh overflow-x-hidden bg-background"
     >
       <motion.div
         className="absolute inset-0"
@@ -115,7 +115,7 @@ export default function ScrollExpandMedia({
         />
         <div className="absolute inset-0 bg-background/80" />
       </motion.div>
-      <div className="relative mx-auto flex min-h-[100dvh] max-w-[1440px] flex-col items-center justify-center px-5 py-16 sm:px-8">
+      <div className="relative mx-auto flex min-h-dvh max-w-360 flex-col items-center justify-center px-5 py-16 sm:px-8">
         <div
           className={`relative z-10 mb-8 text-center ${textBlend ? 'mix-blend-multiply' : ''}`}
         >

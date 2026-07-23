@@ -135,7 +135,7 @@ function NavContent({
   return (
     <>
       <div
-        className={`flex h-[64px] items-center border-b border-[#dfe8f6] bg-[linear-gradient(135deg,#ffffff_0%,#f4f8ff_100%)] px-3 dark:border-white/10 dark:bg-none ${collapsed ? 'justify-center' : 'gap-2'}`}
+        className={`flex h-16 items-center border-b border-[#dfe8f6] bg-[linear-gradient(135deg,#ffffff_0%,#f4f8ff_100%)] px-3 dark:border-white/10 dark:bg-none ${collapsed ? 'justify-center' : 'gap-2'}`}
       >
         <Link
           href="/dashboard"
@@ -179,7 +179,7 @@ function NavContent({
                     className={`group flex h-8 items-center rounded-md px-2 text-[12px] font-medium transition duration-200 ${collapsed ? 'justify-center' : 'gap-2'} ${active ? 'bg-[#e4efff] text-[#1461d2] shadow-[inset_0_0_0_1px_rgba(93,151,246,0.16)] dark:bg-[#1c3a70] dark:text-[#dce9ff]' : 'text-[#68778b] hover:bg-[#eef5ff] hover:text-[#174da8] dark:text-[#aeb7c6] dark:hover:bg-white/[0.07] dark:hover:text-[#f4f6fa]'}`}
                   >
                     <span
-                      className={`grid size-[22px] shrink-0 place-items-center rounded-md transition group-hover:scale-105 ${iconClassName} ${active ? 'ring-1 ring-[#a9cafb]' : ''}`}
+                      className={`grid size-5.5 shrink-0 place-items-center rounded-md transition group-hover:scale-105 ${iconClassName} ${active ? 'ring-1 ring-[#a9cafb]' : ''}`}
                     >
                       <Icon size={13} strokeWidth={2.1} />
                     </span>
@@ -218,7 +218,7 @@ function NavContent({
                 : 'Switch to dark mode'
               : undefined
           }
-          className={`mt-1 flex h-8 w-full items-center rounded-md px-2 text-[12px] font-medium text-[#68778b] transition hover:bg-[#fff0eb] hover:text-[#ef5b4d] dark:text-[#cfc1bc] dark:hover:bg-white/[0.08] dark:hover:text-[#ffc5b8] ${collapsed ? 'justify-center' : 'gap-2'}`}
+          className={`mt-1 flex h-8 w-full items-center rounded-md px-2 text-[12px] font-medium text-[#68778b] transition hover:bg-[#fff0eb] hover:text-[#ef5b4d] dark:text-[#cfc1bc] dark:hover:bg-white/8 dark:hover:text-[#ffc5b8] ${collapsed ? 'justify-center' : 'gap-2'}`}
         >
           {isDark ? (
             <Sun
@@ -295,9 +295,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#f5f9ff] dark:bg-[#111721]">
+    <div className="min-h-dvh bg-[#f5f9ff] dark:bg-[#111721]">
       <aside
-        className={`fixed inset-y-0 left-0 z-20 hidden flex-col border-r border-[#dfe8f6] bg-white transition-[width] duration-300 lg:flex dark:border-white/10 dark:bg-[#181f2a] ${collapsed ? 'w-[64px]' : 'w-[244px]'}`}
+        className={`fixed inset-y-0 left-0 z-20 hidden flex-col border-r border-[#dfe8f6] bg-white transition-[width] duration-300 lg:flex dark:border-white/10 dark:bg-[#181f2a] ${collapsed ? 'w-16' : 'w-61'}`}
       >
         <NavContent
           collapsed={collapsed}
@@ -307,14 +307,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={toggleCollapsed}
-          className="absolute -right-3 top-[88px] grid size-6 place-items-center rounded-full border border-[#dde4ee] bg-white text-[#607086] shadow-sm transition hover:border-[#9db7e8] hover:text-[#2468e5] dark:border-white/15 dark:bg-[#232c3b] dark:text-[#b5c0d2]"
+          className="absolute -right-3 top-22 grid size-6 place-items-center rounded-full border border-[#dde4ee] bg-white text-[#607086] shadow-sm transition hover:border-[#9db7e8] hover:text-[#2468e5] dark:border-white/15 dark:bg-[#232c3b] dark:text-[#b5c0d2]"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </aside>
 
-      <header className="sticky top-0 z-10 flex h-[62px] items-center justify-between border-b border-[#e8edf4] bg-white/90 px-4 backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#181f2a]/90">
+      <header className="sticky top-0 z-10 flex h-15.5 items-center justify-between border-b border-[#e8edf4] bg-white/90 px-4 backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#181f2a]/90">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -358,7 +358,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileOpen(false)}
             className="absolute inset-0 bg-[#152035]/35 backdrop-blur-[1px]"
           />
-          <aside className="relative flex h-full w-[276px] flex-col bg-white shadow-[18px_0_48px_rgba(20,35,60,0.18)] dark:bg-[#181f2a]">
+          <aside className="relative flex h-full w-69 flex-col bg-white shadow-[18px_0_48px_rgba(20,35,60,0.18)] dark:bg-[#181f2a]">
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
@@ -378,9 +378,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div
-        className={`min-h-[100dvh] transition-[padding] duration-300 ${collapsed ? 'lg:pl-[64px]' : 'lg:pl-[244px]'}`}
+        className={`min-h-dvh transition-[padding] duration-300 ${collapsed ? 'lg:pl-16' : 'lg:pl-61'}`}
       >
-        <main className="mx-auto min-h-[calc(100dvh-62px)] max-w-[1600px] px-4 py-6 sm:px-7 lg:min-h-[100dvh] lg:px-10 lg:py-9">
+        <main className="mx-auto min-h-[calc(100dvh-62px)] max-w-[1600px] px-4 py-6 sm:px-7 lg:min-h-dvh lg:px-10 lg:py-9">
           {children}
         </main>
       </div>
