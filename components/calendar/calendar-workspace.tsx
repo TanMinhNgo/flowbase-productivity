@@ -8,7 +8,7 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export type CalendarItemData = {
   id: number;
@@ -106,7 +106,7 @@ export function CalendarWorkspace({
 }: {
   initialItems: CalendarItemData[];
 }) {
-  const today = useMemo(() => new Date(), []);
+  const [today, setToday] = useState(() => new Date());
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(today);
   const [selectedDate, setSelectedDate] = useState(dateKey(today));
@@ -124,6 +124,19 @@ export function CalendarWorkspace({
     scheduled: true,
   });
   const [editingItem, setEditingItem] = useState<CalendarItemData | null>(null);
+
+  // Client components render once on Vercel too. Reset this state after
+  // hydration so "Today" follows the visitor's local browser timezone.
+  useEffect(() => {
+    const localToday = new Date();
+    const localDateKey = dateKey(localToday);
+    setToday(localToday);
+    setCursor(localToday);
+    setSelectedDate(localDateKey);
+    setForm((current) =>
+      current.title === '' ? { ...current, date: localDateKey } : current,
+    );
+  }, []);
 
   const monthDays = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);

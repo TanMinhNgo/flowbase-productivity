@@ -55,7 +55,13 @@ const priorities: Record<string, string> = {
   medium: 'text-amber-700 bg-amber-50 dark:bg-amber-500/10',
   high: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10',
 };
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const localDate = new Date();
+  const year = localDate.getFullYear();
+  const month = String(localDate.getMonth() + 1).padStart(2, '0');
+  const day = String(localDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export function KanbanWorkspace({
   initialBoards,
