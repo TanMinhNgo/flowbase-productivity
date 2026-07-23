@@ -1,10 +1,10 @@
 import { ClerkProvider } from '@clerk/nextjs';
-import "./globals.css";
-import type { Metadata } from "next";
+import './globals.css';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Flowbase - AI-Powered Productivity Workspace",
-  description: "Plan, create, and collaborate in one connected AI workspace.",
+  title: 'Flowbase - AI-Powered Productivity Workspace',
+  description: 'Plan, create, and collaborate in one connected AI workspace.',
 };
 
 export default function RootLayout({
@@ -15,9 +15,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body style={{ margin: 0, padding: 0 }}>
-          {children}
-        </body>
+        <body style={{ margin: 0, padding: 0 }}>{children}</body>
       </html>
     </ClerkProvider>
   );

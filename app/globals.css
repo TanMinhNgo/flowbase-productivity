@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -271,8 +271,37 @@
 }
 
 /* The pre-theme dark variants used navy surfaces; resolve them to the warm dark palette. */
-html.dark [class~="dark:bg-[#111721]"], html.dark [class~="dark:bg-[#10131a]"] { background-color: var(--background) !important; }
-html.dark [class~="dark:bg-[#181f2a]"], html.dark [class~="dark:bg-[#1b202b]"], html.dark [class~="dark:bg-[#1b2330]"], html.dark [class~="dark:bg-[#1b2735]"], html.dark [class~="dark:bg-[#202d3d]"], html.dark [class~="dark:bg-[#232c3b]"], html.dark [class~="dark:bg-[#1c2638]"] { background-color: var(--card) !important; }
-html.dark [class~="dark:bg-[#1c3a70]"], html.dark [class~="dark:bg-[#183054]"], html.dark [class~="dark:bg-[#203d70]"], html.dark [class~="dark:bg-[#21345b]"], html.dark [class~="dark:bg-[#1b3158]"] { background-color: var(--secondary) !important; }
-html.dark [class~="dark:bg-[#1a3979]"], html.dark [class~="dark:bg-[#17233a]"], html.dark [class~="dark:bg-[#151e30]"] { background-color: color-mix(in oklch, var(--primary), transparent 82%) !important; }
-html.dark [class~="dark:text-[#dce9ff]"], html.dark [class~="dark:text-[#cbdcff]"], html.dark [class~="dark:text-[#dbe8ff]"] { color: var(--primary) !important; }
+html.dark [class~='dark:bg-[#111721]'],
+html.dark [class~='dark:bg-[#10131a]'] {
+  background-color: var(--background) !important;
+}
+html.dark [class~='dark:bg-[#181f2a]'],
+html.dark [class~='dark:bg-[#1b202b]'],
+html.dark [class~='dark:bg-[#1b2330]'],
+html.dark [class~='dark:bg-[#1b2735]'],
+html.dark [class~='dark:bg-[#202d3d]'],
+html.dark [class~='dark:bg-[#232c3b]'],
+html.dark [class~='dark:bg-[#1c2638]'] {
+  background-color: var(--card) !important;
+}
+html.dark [class~='dark:bg-[#1c3a70]'],
+html.dark [class~='dark:bg-[#183054]'],
+html.dark [class~='dark:bg-[#203d70]'],
+html.dark [class~='dark:bg-[#21345b]'],
+html.dark [class~='dark:bg-[#1b3158]'] {
+  background-color: var(--secondary) !important;
+}
+html.dark [class~='dark:bg-[#1a3979]'],
+html.dark [class~='dark:bg-[#17233a]'],
+html.dark [class~='dark:bg-[#151e30]'] {
+  background-color: color-mix(
+    in oklch,
+    var(--primary),
+    transparent 82%
+  ) !important;
+}
+html.dark [class~='dark:text-[#dce9ff]'],
+html.dark [class~='dark:text-[#cbdcff]'],
+html.dark [class~='dark:text-[#dbe8ff]'] {
+  color: var(--primary) !important;
+}

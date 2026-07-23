@@ -1,15 +1,15 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
 export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
 
   // Clerk sends this request server-to-server. Leave its signed payload untouched
   // so the route handler can verify it with CLERK_WEBHOOK_SIGNING_SECRET.
-  if (pathname === "/api/webhooks/clerk") {
+  if (pathname === '/api/webhooks/clerk') {
     return;
   }
 
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
     await auth.protect();
   }
 });
