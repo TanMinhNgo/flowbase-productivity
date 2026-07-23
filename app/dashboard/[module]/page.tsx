@@ -1,9 +1,7 @@
 import {
   Bot,
   BrainCircuit,
-  CalendarDays,
   FileStack,
-  KanbanSquare,
   NotebookPen,
   PanelsTopLeft,
   Settings2,
@@ -17,20 +15,6 @@ const modules = {
       'Ask Flowbase to organize an idea, draft a plan, or create your next workspace building block.',
     icon: Bot,
     tone: 'text-[#7255d8] bg-[#eeeaff]',
-  },
-  calendar: {
-    title: 'Calendar',
-    description:
-      'Bring your commitments and the work behind them into one connected planning view.',
-    icon: CalendarDays,
-    tone: 'text-[#159878] bg-[#e5f7f1]',
-  },
-  tasks: {
-    title: 'Task / Kanban',
-    description:
-      'Turn projects into visible work and give every next action a clear place to live.',
-    icon: KanbanSquare,
-    tone: 'text-[#d47727] bg-[#fff1e4]',
   },
   notes: {
     title: 'Notes',
@@ -97,7 +81,7 @@ export default async function ModulePage({
       <p className="mt-3 max-w-xl text-sm leading-6 text-[#6a7484] dark:text-[#adb8c8]">
         {config.description}
       </p>
-      <section className="mt-10 grid min-h-72 place-items-center rounded-2xl border border-dashed border-[#cedaeb] bg-white/65 p-8 text-center dark:border-[#41516a] dark:bg-white/[0.03]">
+      <section className="mt-10 grid min-h-72 place-items-center rounded-2xl border border-dashed border-[#cedaeb] bg-white/65 p-8 text-center dark:border-[#41516a] dark:bg-white/3">
         <div>
           <p className="text-sm font-semibold text-[#3e4b5e] dark:text-[#dce4ef]">
             This workspace is ready for its first real workflow.
