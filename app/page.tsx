@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
+import FeatureShaderCards from "@/components/ui/feature-shader-cards";
 import {
   ArrowRight,
   Bot,
@@ -176,14 +180,17 @@ function SectionHeading({
 
 function PrimaryButton({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <Link href="/sign-up" className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#175ee9] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(23,94,233,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#104ec9] active:translate-y-0 ${className}`}>
+    <Link href="/sign-up" className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold shadow-[0_12px_28px_rgba(23,94,233,0.24)] transition duration-300 hover:-translate-y-0.5 active:translate-y-0 ${className}`}>
       {children}
       <ArrowRight size={16} strokeWidth={2.25} />
     </Link>
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = await auth();
+  if (userId) redirect("/dashboard");
+
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-[#fbfcff] text-[#14171f] selection:bg-[#cfe0ff] dark:bg-[#10131a] dark:text-[#f5f7fb]">
       <nav className="sticky top-0 z-20 border-b border-[#e7eaf1]/80 bg-[#fbfcff]/90 backdrop-blur-xl dark:border-white/10 dark:bg-[#10131a]/90">
@@ -205,23 +212,19 @@ export default function Home() {
         </div>
       </nav>
 
-      <section id="top" className="relative mx-auto grid min-h-[calc(100dvh-70px)] max-w-[1400px] items-center gap-12 px-5 pb-14 pt-16 lg:grid-cols-[0.83fr_1.17fr] lg:px-8 lg:pb-16 lg:pt-20">
-        <div className="relative z-10 animate-[rise_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
-          <p className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#3269d6]"><Sparkles size={14} strokeWidth={2.2} /> Built for focused teams</p>
-          <h1 className="max-w-xl text-5xl font-semibold leading-[1.02] tracking-[-0.065em] sm:text-6xl lg:text-[4.25rem]">Your AI-powered workspace for work that moves.</h1>
-          <p className="mt-6 max-w-lg text-lg leading-8 text-[#5e6575] dark:text-[#b4bccb]">Notes, tasks, whiteboards, and collaboration stay together so you can spend less time managing tools.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryButton>Get started</PrimaryButton>
-            <a href="#showcase" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#dce1eb] bg-white px-5 py-3 text-sm font-semibold text-[#343b4b] transition hover:-translate-y-0.5 hover:border-[#aeb9cf] hover:bg-[#f5f7fb] active:translate-y-0 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"><Play size={15} fill="currentColor" strokeWidth={2.2} /> Watch demo</a>
-          </div>
+      <ScrollExpandMedia
+        mediaType="image"
+        mediaSrc="/flowbase-dashboard.png"
+        bgImageSrc="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2400&q=85"
+        title="Plan with clarity. Build with flow."
+        date="A calmer way to work"
+        scrollToExpand="Scroll to explore Flowbase"
+      >
+        <div className="text-center">
+          <p className="mx-auto max-w-2xl text-lg leading-8 text-muted-foreground">Notes, tasks, whiteboards, and collaboration stay together so you can spend less time managing tools.</p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3"><PrimaryButton>Get started</PrimaryButton><a href="#showcase" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition hover:-translate-y-0.5 hover:bg-secondary active:translate-y-0"><Play size={15} fill="currentColor" strokeWidth={2.2} />Watch demo</a></div>
         </div>
-        <div className="relative animate-[rise_850ms_cubic-bezier(0.16,1,0.3,1)_120ms_both]">
-          <div className="absolute -inset-12 -z-10 rounded-full bg-[#dce9ff]/75 blur-3xl dark:bg-[#1a3979]/30" />
-          <div className="overflow-hidden rounded-2xl border border-white/90 bg-white p-2 shadow-[0_30px_80px_rgba(42,66,112,0.20)] dark:border-white/10 dark:bg-[#1b202b]">
-            <Image src="/flowbase-dashboard.png" alt="Flowbase workspace dashboard with calendar, notes, and kanban board" width={1600} height={1000} priority className="h-auto w-full rounded-[11px]" />
-          </div>
-        </div>
-      </section>
+      </ScrollExpandMedia>
 
       <section className="border-y border-[#e7eaf1] bg-white/60 py-7 dark:border-white/10 dark:bg-white/[0.02]">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-9 gap-y-4 px-5 text-sm font-semibold text-[#687083] lg:px-8 dark:text-[#aeb7c8]">
@@ -232,18 +235,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="mx-auto max-w-[1400px] px-5 py-24 lg:px-8 lg:py-32">
-        <SectionHeading eyebrow="Everything connected" title="The tools you need, in one place." description="Flowbase gives every part of your work a shared context, so each tool makes the next one more useful." />
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {features.map(({ icon: Icon, title, description, className }) => (
-            <article key={title} className={`group min-h-52 rounded-2xl border border-white/80 p-6 shadow-[0_14px_34px_rgba(36,56,95,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(36,56,95,0.12)] dark:border-white/5 ${className}`}>
-              <span className="grid size-10 place-items-center rounded-xl bg-white/75 text-[#175ee9] shadow-sm dark:bg-white/10"><Icon size={20} strokeWidth={1.9} /></span>
-              <h3 className="mt-9 text-lg font-semibold tracking-[-0.03em] text-[#242a36] dark:text-[#f4f6fb]">{title}</h3>
-              <p className="mt-2 max-w-sm text-sm leading-6 text-[#5e6575] dark:text-[#bdc4d1]">{description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <FeatureShaderCards />
 
       <section id="how-it-works" className="bg-[#edf3ff] py-24 dark:bg-[#151e30] lg:py-32">
         <div className="mx-auto max-w-[1400px] px-5 lg:px-8">
@@ -348,7 +340,7 @@ export default function Home() {
       <section className="mx-auto max-w-[1400px] px-5 py-20 lg:px-8 lg:py-28">
         <div className="rounded-2xl bg-[#175ee9] px-7 py-14 text-white shadow-[0_24px_60px_rgba(23,94,233,0.25)] sm:px-12 lg:flex lg:items-end lg:justify-between lg:px-16">
           <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#cbdcff]">Your work, connected</p><h2 className="mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">Build your entire productivity system in one AI workspace.</h2></div>
-          <PrimaryButton className="mt-8 bg-white text-[#175ee9] shadow-none hover:bg-[#edf3ff] lg:mt-0">Start for free</PrimaryButton>
+          <PrimaryButton className="mt-8 bg-white text-primary shadow-none hover:bg-[#edf3ff] lg:mt-0">Start for free</PrimaryButton>
         </div>
       </section>
 

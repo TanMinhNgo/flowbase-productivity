@@ -1,5 +1,4 @@
 import { ClerkProvider } from '@clerk/nextjs';
-import { UserSync } from "@/components/auth/user-sync";
 import "./globals.css";
 import type { Metadata } from "next";
 
@@ -17,7 +16,6 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body style={{ margin: 0, padding: 0 }}>
-          <UserSync />
           {children}
         </body>
       </html>

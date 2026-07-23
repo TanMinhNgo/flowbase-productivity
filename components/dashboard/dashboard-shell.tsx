@@ -16,6 +16,8 @@ import {
   PanelsTopLeft,
   Settings2,
   Sparkles,
+  Sun,
+  Moon,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -70,7 +72,7 @@ function isActiveRoute(pathname: string, href: string) {
   return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 }
 
-function NavContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+function NavContent({ collapsed, isDark, onNavigate, onToggleTheme }: { collapsed: boolean; isDark: boolean; onNavigate?: () => void; onToggleTheme: () => void }) {
   const pathname = usePathname();
   const { user } = useUser();
   const displayName = user?.fullName ?? user?.firstName ?? "Your account";
@@ -108,6 +110,10 @@ function NavContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
           <CircleHelp size={16} className="shrink-0 text-[#4d83d9]" strokeWidth={1.9} />
           {!collapsed ? <span>Help & feedback</span> : null}
         </Link>
+        <button type="button" onClick={onToggleTheme} title={collapsed ? (isDark ? "Switch to light mode" : "Switch to dark mode") : undefined} className={`mt-1 flex h-8 w-full items-center rounded-md px-2 text-[12px] font-medium text-[#68778b] transition hover:bg-[#fff0eb] hover:text-[#ef5b4d] dark:text-[#cfc1bc] dark:hover:bg-white/[0.08] dark:hover:text-[#ffc5b8] ${collapsed ? "justify-center" : "gap-2"}`}>
+          {isDark ? <Sun size={16} className="shrink-0 text-[#f2a64b]" strokeWidth={1.9} /> : <Moon size={16} className="shrink-0 text-[#d96a59]" strokeWidth={1.9} />}
+          {!collapsed ? <span>{isDark ? "Light mode" : "Dark mode"}</span> : null}
+        </button>
         <div className={`mt-1 flex min-h-10 items-center rounded-md bg-[#eef5ff] px-2 dark:bg-white/5 ${collapsed ? "justify-center" : "gap-2"}`}>
           <UserButton appearance={{ elements: { avatarBox: "h-7 w-7" } }} />
           {!collapsed ? <span className="min-w-0 truncate text-[12px] font-medium text-[#4c5768] dark:text-[#d6dce6]">{displayName}</span> : null}
@@ -120,9 +126,14 @@ function NavContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("flowbase-sidebar-collapsed") === "true");
+    const savedTheme = window.localStorage.getItem("flowbase-theme");
+    const nextIsDark = savedTheme ? savedTheme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setIsDark(nextIsDark);
+    document.documentElement.classList.toggle("dark", nextIsDark);
   }, []);
 
   useEffect(() => {
@@ -141,10 +152,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const toggleTheme = () => {
+    setIsDark((current) => {
+      const next = !current;
+      window.localStorage.setItem("flowbase-theme", next ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", next);
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-[100dvh] bg-[#f5f9ff] dark:bg-[#111721]">
       <aside className={`fixed inset-y-0 left-0 z-20 hidden flex-col border-r border-[#dfe8f6] bg-white transition-[width] duration-300 lg:flex dark:border-white/10 dark:bg-[#181f2a] ${collapsed ? "w-[64px]" : "w-[244px]"}`}>
-        <NavContent collapsed={collapsed} />
+        <NavContent collapsed={collapsed} isDark={isDark} onToggleTheme={toggleTheme} />
         <button type="button" onClick={toggleCollapsed} className="absolute -right-3 top-[88px] grid size-6 place-items-center rounded-full border border-[#dde4ee] bg-white text-[#607086] shadow-sm transition hover:border-[#9db7e8] hover:text-[#2468e5] dark:border-white/15 dark:bg-[#232c3b] dark:text-[#b5c0d2]" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -153,10 +173,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-10 flex h-[62px] items-center justify-between border-b border-[#e8edf4] bg-white/90 px-4 backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#181f2a]/90">
         <button type="button" onClick={() => setMobileOpen(true)} className="grid size-9 place-items-center rounded-lg text-[#4a5769] hover:bg-[#eef3fa] dark:text-[#d8deea] dark:hover:bg-white/10" aria-label="Open navigation"><Menu size={20} /></button>
         <Link href="/dashboard" className="flex items-center gap-2 text-[16px] font-semibold tracking-[-0.045em]"><span className="grid size-7 place-items-center rounded-lg bg-[#2468e5] text-white"><Sparkles size={14} fill="currentColor" /></span>flowbase</Link>
-        <UserButton appearance={{ elements: { avatarBox: "h-7 w-7" } }} />
+        <div className="flex items-center gap-1"><button type="button" onClick={toggleTheme} className="grid size-9 place-items-center rounded-lg text-[#617086] hover:bg-[#fff0eb] hover:text-[#ef5b4d] dark:text-[#d8d0cf] dark:hover:bg-white/10" aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}>{isDark ? <Sun size={18} /> : <Moon size={18} />}</button><UserButton appearance={{ elements: { avatarBox: "h-7 w-7" } }} /></div>
       </header>
 
-      {mobileOpen ? <div className="fixed inset-0 z-30 lg:hidden" role="dialog" aria-modal="true" aria-label="Workspace navigation"><button type="button" aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-[#152035]/35 backdrop-blur-[1px]" /><aside className="relative flex h-full w-[276px] flex-col bg-white shadow-[18px_0_48px_rgba(20,35,60,0.18)] dark:bg-[#181f2a]"><button type="button" onClick={() => setMobileOpen(false)} className="absolute right-3 top-4 grid size-8 place-items-center rounded-lg text-[#647084] hover:bg-[#f2f5f9] dark:hover:bg-white/10" aria-label="Close navigation"><X size={18} /></button><NavContent collapsed={false} onNavigate={() => setMobileOpen(false)} /></aside></div> : null}
+      {mobileOpen ? <div className="fixed inset-0 z-30 lg:hidden" role="dialog" aria-modal="true" aria-label="Workspace navigation"><button type="button" aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-[#152035]/35 backdrop-blur-[1px]" /><aside className="relative flex h-full w-[276px] flex-col bg-white shadow-[18px_0_48px_rgba(20,35,60,0.18)] dark:bg-[#181f2a]"><button type="button" onClick={() => setMobileOpen(false)} className="absolute right-3 top-4 grid size-8 place-items-center rounded-lg text-[#647084] hover:bg-[#f2f5f9] dark:hover:bg-white/10" aria-label="Close navigation"><X size={18} /></button><NavContent collapsed={false} isDark={isDark} onToggleTheme={toggleTheme} onNavigate={() => setMobileOpen(false)} /></aside></div> : null}
 
       <div className={`min-h-[100dvh] transition-[padding] duration-300 ${collapsed ? "lg:pl-[64px]" : "lg:pl-[244px]"}`}>
         <main className="mx-auto min-h-[calc(100dvh-62px)] max-w-[1600px] px-4 py-6 sm:px-7 lg:min-h-[100dvh] lg:px-10 lg:py-9">{children}</main>

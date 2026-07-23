@@ -2,8 +2,8 @@ import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
   return (
-    <main style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#09090b' }}>
-      <SignIn forceRedirectUrl="/dashboard" />
+    <main style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", backgroundColor: "#fbf7ef" }}>
+      <SignIn forceRedirectUrl="/dashboard" fallbackRedirectUrl="/dashboard" />
     </main>
   );
 }
