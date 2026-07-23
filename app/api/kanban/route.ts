@@ -69,7 +69,8 @@ export async function POST(request: Request) {
       .values([
         { boardId: board.id, name: 'Todo', position: 0 },
         { boardId: board.id, name: 'In Progress', position: 1 },
-        { boardId: board.id, name: 'Done', position: 2 },
+        { boardId: board.id, name: 'In Review', position: 2 },
+        { boardId: board.id, name: 'Done', position: 3 },
       ])
       .returning();
     return NextResponse.json({ board, columns });
