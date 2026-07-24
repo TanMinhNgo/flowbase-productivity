@@ -305,3 +305,9 @@ html.dark [class~='dark:text-[#cbdcff]'],
 html.dark [class~='dark:text-[#dbe8ff]'] {
   color: var(--primary) !important;
 }
+
+/* Liveblocks portals render outside our z-50 task-comment modal. Keep emoji
+   pickers above the modal overlay instead of letting them appear behind it. */
+.lb-portal.lb-emoji-picker {
+  z-index: 70 !important;
+}
