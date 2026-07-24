@@ -8,6 +8,7 @@ import {
   text,
   time,
   timestamp,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -60,6 +61,23 @@ export const kanbanColumns = pgTable('kanban_columns', {
   position: integer('position').notNull().default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const kanbanBoardCollaborators = pgTable(
+  'kanban_board_collaborators',
+  {
+    id: serial('id').primaryKey(),
+    boardId: integer('board_id').notNull(),
+    clerkId: text('clerk_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('kanban_board_collaborators_board_user_idx').on(
+      table.boardId,
+      table.clerkId,
+    ),
+    index('kanban_board_collaborators_clerk_id_idx').on(table.clerkId),
+  ],
+);
 
 export const kanbanTasks = pgTable(
   'kanban_tasks',

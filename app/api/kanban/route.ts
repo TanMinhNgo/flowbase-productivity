@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import {
   calendarItems,
+  kanbanBoardCollaborators,
   kanbanBoards,
   kanbanColumns,
   kanbanTasks,
@@ -13,25 +14,44 @@ import {
 const fail = (message: string, status = 400) =>
   NextResponse.json({ error: message }, { status });
 
-async function ownedBoard(boardId: number, clerkId: string) {
+async function accessibleBoard(boardId: number, clerkId: string) {
   const [board] = await db
     .select()
     .from(kanbanBoards)
     .where(
       and(eq(kanbanBoards.id, boardId), eq(kanbanBoards.clerkId, clerkId)),
     );
-  return board;
+  if (board?.clerkId === clerkId) return board;
+  const [membership] = await db
+    .select({ id: kanbanBoardCollaborators.id })
+    .from(kanbanBoardCollaborators)
+    .where(
+      and(
+        eq(kanbanBoardCollaborators.boardId, boardId),
+        eq(kanbanBoardCollaborators.clerkId, clerkId),
+      ),
+    );
+  return membership ? board : undefined;
 }
 
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return fail('Unauthorized', 401);
 
-  const boards = await db
+  const ownedBoards = await db
     .select()
     .from(kanbanBoards)
     .where(eq(kanbanBoards.clerkId, userId))
     .orderBy(desc(kanbanBoards.updatedAt));
+  const memberships = await db
+    .select({ boardId: kanbanBoardCollaborators.boardId })
+    .from(kanbanBoardCollaborators)
+    .where(eq(kanbanBoardCollaborators.clerkId, userId));
+  const sharedIds = memberships.map((membership) => membership.boardId);
+  const sharedBoards = sharedIds.length
+    ? await db.select().from(kanbanBoards).where(inArray(kanbanBoards.id, sharedIds))
+    : [];
+  const boards = [...ownedBoards, ...sharedBoards.filter((board) => board.clerkId !== userId)].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
   const boardIds = boards.map((board) => board.id);
   if (!boardIds.length)
     return NextResponse.json({ boards, columns: [], tasks: [] });
@@ -77,7 +97,7 @@ export async function POST(request: Request) {
   }
 
   const boardId = Number(body.boardId);
-  if (!Number.isInteger(boardId) || !(await ownedBoard(boardId, userId)))
+  if (!Number.isInteger(boardId) || !(await accessibleBoard(boardId, userId)))
     return fail('Board not found.', 404);
 
   if (action === 'createColumn') {

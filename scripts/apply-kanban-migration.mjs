@@ -10,7 +10,11 @@ if (!connectionString) {
 }
 
 const sql = neon(connectionString);
-const migrations = ['0001_kanban.sql', '0002_kanban_in_review.sql'];
+const migrations = [
+  '0001_kanban.sql',
+  '0002_kanban_in_review.sql',
+  '0003_kanban_collaborators.sql',
+];
 let appliedStatements = 0;
 
 for (const migrationName of migrations) {
