@@ -12,7 +12,7 @@ import type {
 } from '@excalidraw/excalidraw/types';
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import '@excalidraw/excalidraw/index.css';
-import { StickyNote } from 'lucide-react';
+import { PenLine, Sparkles, StickyNote } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type WhiteboardScene = {
@@ -66,19 +66,20 @@ export function ExcalidrawCanvas({
   boardId,
   boardName,
   scene,
-  stickyColor,
   onSceneChange,
 }: {
   boardId: number;
   boardName: string;
   scene: WhiteboardScene;
-  stickyColor: string;
   onSceneChange: (scene: WhiteboardScene) => void;
 }) {
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const current = useRef(sceneFromStrings(scene));
   const initialBoardId = useRef(boardId);
+  const [hasContent, setHasContent] = useState(
+    () => current.current.elements.some((element) => !element.isDeleted),
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -93,6 +94,7 @@ export function ExcalidrawCanvas({
   useEffect(() => {
     const next = sceneFromStrings(scene);
     current.current = next;
+    setHasContent(next.elements.some((element) => !element.isDeleted));
     if (initialBoardId.current !== boardId) {
       initialBoardId.current = boardId;
       if (api) {
@@ -112,6 +114,7 @@ export function ExcalidrawCanvas({
       files: BinaryFiles,
     ) => {
       current.current = { elements, appState, files };
+      setHasContent(elements.some((element) => !element.isDeleted));
       onSceneChange({
         elements: JSON.stringify(elements),
         appState: JSON.stringify(serializableAppState(appState)),
@@ -136,7 +139,7 @@ export function ExcalidrawCanvas({
           y,
           width: 240,
           height: 170,
-          backgroundColor: stickyColor,
+          backgroundColor: '#f9d7a4',
           fillStyle: 'solid',
           strokeColor: '#8f5b42',
           roundness: { type: 3 },
@@ -249,36 +252,16 @@ export function ExcalidrawCanvas({
     return () => window.removeEventListener('flowbase:export-png', handler);
   });
 
-  useEffect(() => {
-    const handler = (event: Event) => {
-      const detail = (
-        event as CustomEvent<{
-          target: 'stroke' | 'background' | 'text';
-          color: string;
-        }>
-      ).detail;
-      if (!api || !detail) return;
-      api.updateScene({
-        appState: {
-          currentItemStrokeColor:
-            detail.target === 'background'
-              ? api.getAppState().currentItemStrokeColor
-              : detail.color,
-          currentItemBackgroundColor:
-            detail.target === 'background'
-              ? detail.color
-              : api.getAppState().currentItemBackgroundColor,
-        },
-      });
-    };
-    window.addEventListener('flowbase:set-color', handler);
-    return () => window.removeEventListener('flowbase:set-color', handler);
-  }, [api]);
-
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-[#fffaf6] dark:bg-[#1b2430]">
       <Excalidraw
-        initialData={sceneFromStrings(scene)}
+        initialData={{
+          ...sceneFromStrings(scene),
+          appState: {
+            ...sceneFromStrings(scene).appState,
+            showWelcomeScreen: false,
+          },
+        }}
         excalidrawAPI={setApi}
         onChange={emitScene}
         theme={theme}
@@ -296,6 +279,39 @@ export function ExcalidrawCanvas({
           Sticky note
         </button>
       </div>
+      {!hasContent ? (
+        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center p-6">
+          <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-border/80 bg-card/95 p-6 text-center shadow-[0_18px_55px_rgba(117,72,53,0.14)] backdrop-blur">
+            <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <PenLine size={20} />
+            </span>
+            <h2 className="mt-4 text-lg font-semibold tracking-tight">
+              Start shaping your idea
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Draw freely, drop in a note, or let Flowbase turn a prompt into an editable diagram.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={addSticky}
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
+              >
+                <StickyNote size={15} />
+                Add a sticky note
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('flowbase:open-diagram'))}
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-semibold hover:bg-secondary"
+              >
+                <Sparkles size={15} className="text-primary" />
+                Create with AI
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <DiagramBridge onDiagram={addDiagram} />
     </div>
   );

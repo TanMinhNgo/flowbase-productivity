@@ -204,34 +204,6 @@ function BoardForm({
   );
 }
 
-function ColorControl({
-  label,
-  target,
-  value,
-  onChange,
-}: {
-  label: string;
-  target: 'stroke' | 'background' | 'text';
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground shadow-sm hover:bg-secondary">
-      <span className="hidden sm:inline">{label}</span>
-      <span
-        className="size-4 rounded-full border border-black/10"
-        style={{ backgroundColor: value }}
-      />
-      <input
-        type="color"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="sr-only"
-      />
-    </label>
-  );
-}
-
 export function WhiteboardWorkspace() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -245,10 +217,6 @@ export function WhiteboardWorkspace() {
   const [diagramPrompt, setDiagramPrompt] = useState('');
   const [diagramBusy, setDiagramBusy] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [stickyColor, setStickyColor] = useState('#f9d7a4');
-  const [strokeColor, setStrokeColor] = useState('#4f5d6d');
-  const [backgroundColor, setBackgroundColor] = useState('#dfeafb');
-  const [textColor, setTextColor] = useState('#29323d');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selected = boards.find((board) => board.id === selectedId) ?? null;
   const scene = useMemo<WhiteboardScene | null>(
@@ -348,14 +316,11 @@ export function WhiteboardWorkspace() {
     },
     [patch, selected],
   );
-  const setCanvasColor = (
-    target: 'stroke' | 'background' | 'text',
-    color: string,
-  ) => {
-    window.dispatchEvent(
-      new CustomEvent('flowbase:set-color', { detail: { target, color } }),
-    );
-  };
+  useEffect(() => {
+    const openDiagram = () => setDiagramOpen(true);
+    window.addEventListener('flowbase:open-diagram', openDiagram);
+    return () => window.removeEventListener('flowbase:open-diagram', openDiagram);
+  }, []);
   const generateDiagram = async () => {
     if (!diagramPrompt.trim()) return;
     setDiagramBusy(true);
@@ -483,39 +448,6 @@ export function WhiteboardWorkspace() {
                 {selected.name}
               </h1>
               <div className="order-3 flex w-full items-center gap-2 overflow-x-auto pb-0.5 sm:order-0 sm:w-auto">
-                <ColorControl
-                  label="Stroke"
-                  target="stroke"
-                  value={strokeColor}
-                  onChange={(value) => {
-                    setStrokeColor(value);
-                    setCanvasColor('stroke', value);
-                  }}
-                />
-                <ColorControl
-                  label="Fill"
-                  target="background"
-                  value={backgroundColor}
-                  onChange={(value) => {
-                    setBackgroundColor(value);
-                    setCanvasColor('background', value);
-                  }}
-                />
-                <ColorControl
-                  label="Text"
-                  target="text"
-                  value={textColor}
-                  onChange={(value) => {
-                    setTextColor(value);
-                    setCanvasColor('text', value);
-                  }}
-                />
-                <ColorControl
-                  label="Sticky"
-                  target="background"
-                  value={stickyColor}
-                  onChange={setStickyColor}
-                />
                 <button
                   type="button"
                   onClick={() => setDiagramOpen(true)}
@@ -608,7 +540,6 @@ export function WhiteboardWorkspace() {
             boardId={selected.id}
             boardName={selected.name}
             scene={scene}
-            stickyColor={stickyColor}
             onSceneChange={queueScene}
           />
         ) : (
