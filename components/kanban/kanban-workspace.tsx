@@ -19,7 +19,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { Composer, Thread } from '@liveblocks/react-ui';
+import { Composer, LiveblocksUiConfig, Thread } from '@liveblocks/react-ui';
 import '@liveblocks/react-ui/styles.css';
 
 import { RoomProvider, useBroadcastEvent, useEventListener, useOthers, useThreads } from '@/liveblocks.config';
@@ -483,7 +483,7 @@ function CollaborationDialog({ board, onClose }: { board: Board; onClose: () => 
 function TaskCommentsPanel({ task, onClose }: { task: Task; onClose: () => void }) {
   const { threads = [] } = useThreads();
   const taskThreads = threads.filter((thread) => thread.metadata.taskId === String(task.id));
-  return <Modal title={`Comments · ${task.title}`} onClose={onClose}><div className="space-y-4"><p className="text-sm text-muted-foreground">Discuss this task with everyone who has access to the board.</p><div className="max-h-[48vh] space-y-3 overflow-y-auto">{taskThreads.length ? taskThreads.map((thread) => <Thread key={thread.id} thread={thread} />) : <div className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">No comments yet. Start the conversation below.</div>}</div><div className="rounded-xl border border-border bg-secondary/40 p-2"><Composer metadata={{ taskId: String(task.id) }} /></div></div></Modal>;
+  return <LiveblocksUiConfig emojibaseUrl="https://unpkg.com/emojibase-data"><Modal title={`Comments · ${task.title}`} onClose={onClose}><div className="space-y-4"><p className="text-sm text-muted-foreground">Discuss this task with everyone who has access to the board.</p><div className="max-h-[48vh] space-y-3 overflow-y-auto">{taskThreads.length ? taskThreads.map((thread) => <Thread key={thread.id} thread={thread} />) : <div className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">No comments yet. Start the conversation below.</div>}</div><div className="rounded-xl border border-border bg-secondary/40 p-2"><Composer metadata={{ taskId: String(task.id) }} /></div></div></Modal></LiveblocksUiConfig>;
 }
 
 function KanbanColumn({
