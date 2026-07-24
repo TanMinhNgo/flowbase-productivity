@@ -3,13 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type StreamingState = 'idle' | 'connecting' | 'recording' | 'error';
-type TokenResponse = { token: string; expiresInSeconds: number; error?: string };
+type TokenResponse = {
+  token: string;
+  expiresInSeconds: number;
+  error?: string;
+};
 
 type StreamingOptions = {
   onFinalTranscript: (transcript: string) => void;
 };
 
-export function useAssemblyAIStreaming({ onFinalTranscript }: StreamingOptions) {
+export function useAssemblyAIStreaming({
+  onFinalTranscript,
+}: StreamingOptions) {
   const [state, setState] = useState<StreamingState>('idle');
   const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
@@ -76,13 +82,21 @@ export function useAssemblyAIStreaming({ onFinalTranscript }: StreamingOptions) 
         throw new Error('This browser does not support microphone streaming.');
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
       });
       streamRef.current = stream;
-      const tokenResponse = await fetch('/api/assemblyai/token', { cache: 'no-store' });
+      const tokenResponse = await fetch('/api/assemblyai/token', {
+        cache: 'no-store',
+      });
       const tokenData = (await tokenResponse.json()) as TokenResponse;
       if (!tokenResponse.ok || !tokenData.token)
-        throw new Error(tokenData.error ?? 'Could not create a speech session.');
+        throw new Error(
+          tokenData.error ?? 'Could not create a speech session.',
+        );
 
       const context = new AudioContext();
       contextRef.current = context;
@@ -132,7 +146,9 @@ export function useAssemblyAIStreaming({ onFinalTranscript }: StreamingOptions) 
     } catch (reason) {
       cleanup();
       setState('error');
-      setError(reason instanceof Error ? reason.message : 'Could not start recording.');
+      setError(
+        reason instanceof Error ? reason.message : 'Could not start recording.',
+      );
     }
   }, [cleanup, state]);
 

@@ -125,9 +125,27 @@ export const notes = pgTable(
   ],
 );
 
+export const whiteboards = pgTable(
+  'whiteboards',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    name: text('name').notNull().default('Untitled whiteboard'),
+    color: text('color').notNull().default('coral'),
+    elements: text('elements').notNull().default('[]'),
+    appState: text('app_state').notNull().default('{}'),
+    files: text('files').notNull().default('{}'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [index('whiteboards_clerk_id_idx').on(table.clerkId)],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CalendarItem = typeof calendarItems.$inferSelect;
 export type NewCalendarItem = typeof calendarItems.$inferInsert;
 export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
+export type Whiteboard = typeof whiteboards.$inferSelect;
+export type NewWhiteboard = typeof whiteboards.$inferInsert;

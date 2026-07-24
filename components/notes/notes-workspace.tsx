@@ -219,11 +219,15 @@ function Editor({
       const documentEnd = editor.state.doc.content.size;
       const requestedPosition = voiceInsertionRef.current;
       const position =
-        requestedPosition !== null && requestedPosition >= 0 && requestedPosition <= documentEnd
+        requestedPosition !== null &&
+        requestedPosition >= 0 &&
+        requestedPosition <= documentEnd
           ? requestedPosition
           : documentEnd;
       const previousCharacter =
-        position > 0 ? editor.state.doc.textBetween(position - 1, position, '') : '';
+        position > 0
+          ? editor.state.doc.textBetween(position - 1, position, '')
+          : '';
       const text = `${previousCharacter && !/\s/.test(previousCharacter) ? ' ' : ''}${transcript}`;
       editor.chain().focus().insertContentAt(position, text).run();
       voiceInsertionRef.current = position + text.length;
@@ -286,14 +290,18 @@ function Editor({
       <IconButton
         label="Heading 1"
         active={editor.isActive('heading', { level: 1 })}
-        onClick={() => editor.chain().focus().setNode('heading', { level: 1 }).run()}
+        onClick={() =>
+          editor.chain().focus().setNode('heading', { level: 1 }).run()
+        }
       >
         <Heading1 size={16} />
       </IconButton>
       <IconButton
         label="Heading 2"
         active={editor.isActive('heading', { level: 2 })}
-        onClick={() => editor.chain().focus().setNode('heading', { level: 2 }).run()}
+        onClick={() =>
+          editor.chain().focus().setNode('heading', { level: 2 }).run()
+        }
       >
         <Heading2 size={16} />
       </IconButton>

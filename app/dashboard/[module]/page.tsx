@@ -1,10 +1,4 @@
-import {
-  Bot,
-  BrainCircuit,
-  FileStack,
-  PanelsTopLeft,
-  Settings2,
-} from 'lucide-react';
+import { Bot, BrainCircuit, FileStack, Settings2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 const modules = {
@@ -14,13 +8,6 @@ const modules = {
       'Ask Flowbase to organize an idea, draft a plan, or create your next workspace building block.',
     icon: Bot,
     tone: 'text-[#7255d8] bg-[#eeeaff]',
-  },
-  whiteboard: {
-    title: 'Whiteboard',
-    description:
-      'Map strategy, systems, and creative thinking in a shared visual space.',
-    icon: PanelsTopLeft,
-    tone: 'text-[#138bad] bg-[#e5f6fb]',
   },
   spaces: {
     title: 'Pages / Spaces',

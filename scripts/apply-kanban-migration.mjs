@@ -15,6 +15,7 @@ const migrations = [
   '0002_kanban_in_review.sql',
   '0003_kanban_collaborators.sql',
   '0004_notes.sql',
+  '0005_whiteboards.sql',
 ];
 let appliedStatements = 0;
 
