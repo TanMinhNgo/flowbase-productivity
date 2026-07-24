@@ -31,6 +31,7 @@ import {
   ListChecks,
   ListOrdered,
   LoaderCircle,
+  Mic,
   PanelLeft,
   Pin,
   PinOff,
@@ -38,11 +39,14 @@ import {
   Search,
   Sparkles,
   Strikethrough,
+  Square,
   Trash2,
   Underline as UnderlineIcon,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { useAssemblyAIStreaming } from '@/hooks/use-assemblyai-streaming';
 
 type NoteColor = 'coral' | 'apricot' | 'rose' | 'violet' | 'sky' | 'mint';
 type Note = {
@@ -173,6 +177,7 @@ function Editor({
   const [slashOpen, setSlashOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [selection, setSelection] = useState('');
+  const voiceInsertionRef = useRef<number | null>(null);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -208,6 +213,26 @@ function Editor({
     setSlashOpen(false);
     setAiOpen(false);
   }, [editor, note.id, note.content]);
+  const insertVoiceTranscript = useCallback(
+    (transcript: string) => {
+      if (!editor) return;
+      const documentEnd = editor.state.doc.content.size;
+      const requestedPosition = voiceInsertionRef.current;
+      const position =
+        requestedPosition !== null && requestedPosition >= 0 && requestedPosition <= documentEnd
+          ? requestedPosition
+          : documentEnd;
+      const previousCharacter =
+        position > 0 ? editor.state.doc.textBetween(position - 1, position, '') : '';
+      const text = `${previousCharacter && !/\s/.test(previousCharacter) ? ' ' : ''}${transcript}`;
+      editor.chain().focus().insertContentAt(position, text).run();
+      voiceInsertionRef.current = position + text.length;
+    },
+    [editor],
+  );
+  const voice = useAssemblyAIStreaming({
+    onFinalTranscript: insertVoiceTranscript,
+  });
   if (!editor)
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -249,6 +274,12 @@ function Editor({
         error instanceof Error ? error.message : 'AI Refine failed.',
       );
     }
+  };
+  const startVoice = () => {
+    voiceInsertionRef.current = editor.isFocused
+      ? editor.state.selection.from
+      : editor.state.doc.content.size;
+    void voice.start();
   };
   const menu = (
     <>
@@ -338,6 +369,24 @@ function Editor({
       >
         <Code2 size={16} />
       </IconButton>
+      <span className="mx-1 h-5 w-px bg-border" />
+      <button
+        type="button"
+        onClick={voice.isRecording ? voice.stop : startVoice}
+        className={`flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition ${voice.isRecording ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
+        aria-label={voice.isRecording ? 'Stop recording' : 'Speak to Note'}
+      >
+        {voice.isRecording ? (
+          <Square size={12} fill="currentColor" />
+        ) : (
+          <Mic size={14} />
+        )}
+        <span className={voice.isRecording ? 'relative flex size-2' : 'hidden'}>
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60" />
+          <span className="relative inline-flex size-2 rounded-full bg-current" />
+        </span>
+        {voice.isRecording ? 'Stop' : 'Speak to Note'}
+      </button>
     </>
   );
   return (
@@ -346,6 +395,20 @@ function Editor({
         {menu}
       </div>
       <div className="relative min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-10 lg:px-14">
+        {voice.preview ? (
+          <div className="mb-5 rounded-xl border border-primary/25 bg-secondary/65 px-3 py-2 text-sm leading-6 text-secondary-foreground">
+            <span className="mr-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              <Mic size={13} className="animate-pulse" />
+              Listening
+            </span>
+            {voice.preview}
+          </div>
+        ) : null}
+        {voice.error ? (
+          <div className="mb-5 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {voice.error}
+          </div>
+        ) : null}
         {slashOpen ? (
           <div className="absolute left-5 top-4 z-20 w-56 rounded-xl border border-border bg-card p-1.5 shadow-lg sm:left-10 lg:left-14">
             <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
