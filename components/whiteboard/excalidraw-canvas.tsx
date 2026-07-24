@@ -75,7 +75,8 @@ export function ExcalidrawCanvas({
 }) {
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const current = useRef(sceneFromStrings(scene));
+  const initialScene = useRef(sceneFromStrings(scene));
+  const current = useRef(initialScene.current);
   const initialBoardId = useRef(boardId);
   const [hasContent, setHasContent] = useState(
     () => current.current.elements.some((element) => !element.isDeleted),
@@ -92,20 +93,19 @@ export function ExcalidrawCanvas({
   }, []);
 
   useEffect(() => {
+    if (initialBoardId.current === boardId) return;
+    initialBoardId.current = boardId;
     const next = sceneFromStrings(scene);
     current.current = next;
     setHasContent(next.elements.some((element) => !element.isDeleted));
-    if (initialBoardId.current !== boardId) {
-      initialBoardId.current = boardId;
-      if (api) {
-        api.updateScene({
-          elements: next.elements,
-          appState: { ...api.getAppState(), ...next.appState },
-        });
-        void api.addFiles(Object.values(next.files));
-      }
+    if (api) {
+      api.updateScene({
+        elements: next.elements,
+        appState: { ...api.getAppState(), ...next.appState },
+      });
+      void api.addFiles(Object.values(next.files));
     }
-  }, [api, boardId, scene]);
+  }, [api, boardId]);
 
   const emitScene = useCallback(
     (
@@ -256,9 +256,9 @@ export function ExcalidrawCanvas({
     <div className="relative min-h-0 flex-1 overflow-hidden bg-[#fffaf6] dark:bg-[#1b2430]">
       <Excalidraw
         initialData={{
-          ...sceneFromStrings(scene),
+          ...initialScene.current,
           appState: {
-            ...sceneFromStrings(scene).appState,
+            ...initialScene.current.appState,
             showWelcomeScreen: false,
           },
         }}

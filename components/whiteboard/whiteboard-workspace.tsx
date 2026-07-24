@@ -288,8 +288,8 @@ export function WhiteboardWorkspace() {
   };
   const queueScene = useCallback(
     (nextScene: WhiteboardScene) => {
-      if (!selected) return;
-      const id = selected.id;
+      if (!selectedId) return;
+      const id = selectedId;
       setBoards((current) =>
         current.map((item) =>
           item.id === id
@@ -314,7 +314,7 @@ export function WhiteboardWorkspace() {
         700,
       );
     },
-    [patch, selected],
+    [patch, selectedId],
   );
   useEffect(() => {
     const openDiagram = () => setDiagramOpen(true);

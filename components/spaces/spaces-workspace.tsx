@@ -255,10 +255,10 @@ export function SpacesWorkspace() {
     );
   };
   return (
-    <section className="mx-auto max-w-[1400px] animate-[rise_500ms_cubic-bezier(0.16,1,0.3,1)_both] pb-10">
+    <section className="mx-auto max-w-350 animate-[rise_500ms_cubic-bezier(0.16,1,0.3,1)_both] pb-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-[-0.05em]">
+          <h1 className="text-3xl font-semibold tracking-tighter">
             All Spaces
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
