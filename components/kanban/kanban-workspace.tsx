@@ -22,7 +22,13 @@ import {
 import { Composer, LiveblocksUiConfig, Thread } from '@liveblocks/react-ui';
 import '@liveblocks/react-ui/styles.css';
 
-import { RoomProvider, useBroadcastEvent, useEventListener, useOthers, useThreads } from '@/liveblocks.config';
+import {
+  RoomProvider,
+  useBroadcastEvent,
+  useEventListener,
+  useOthers,
+  useThreads,
+} from '@/liveblocks.config';
 import { roomIdForBoard } from '@/lib/liveblocks';
 
 type Board = { id: number; name: string; color: string };
@@ -317,61 +323,79 @@ export function KanbanWorkspace({
           </aside>
           <BoardRoom board={selectedBoard} onRemoteMutation={refreshWorkspace}>
             <main className="min-w-0 rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
-            {selectedBoard ? (
-              <>
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`size-4 rounded-full ${colorClass(selectedBoard.color)}`}
-                    />
-                    <div>
-                      <h2 className="text-xl font-bold">
-                        {selectedBoard.name}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {boardColumns.length} of 5 columns
-                      </p>
+              {selectedBoard ? (
+                <>
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`size-4 rounded-full ${colorClass(selectedBoard.color)}`}
+                      />
+                      <div>
+                        <h2 className="text-xl font-bold">
+                          {selectedBoard.name}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {boardColumns.length} of 5 columns
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ActiveCollaborators
+                        onOpen={() => setCollaborationOpen(true)}
+                      />
+                      <button
+                        onClick={() => setCollaborationOpen(true)}
+                        className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition hover:border-primary/40 hover:text-primary"
+                      >
+                        <Share2 className="size-4" /> Collaboration
+                      </button>
+                      <button
+                        disabled={boardColumns.length >= 5}
+                        onClick={createColumn}
+                        className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Plus className="size-4" /> Add column
+                      </button>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ActiveCollaborators onOpen={() => setCollaborationOpen(true)} />
-                    <button onClick={() => setCollaborationOpen(true)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition hover:border-primary/40 hover:text-primary"><Share2 className="size-4" /> Collaboration</button>
-                    <button disabled={boardColumns.length >= 5} onClick={createColumn} className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"><Plus className="size-4" /> Add column</button>
+                  <div className="flex min-h-127.5 gap-4 overflow-x-auto pb-3">
+                    {boardColumns.map((column) => (
+                      <KanbanColumn
+                        key={column.id}
+                        column={column}
+                        tasks={tasks
+                          .filter((task) => task.columnId === column.id)
+                          .sort((a, b) => a.position - b.position)}
+                        editing={editingColumn === column.id}
+                        columnName={columnName}
+                        onColumnName={setColumnName}
+                        onEditColumn={() => {
+                          setEditingColumn(column.id);
+                          setColumnName(column.name);
+                        }}
+                        onSaveColumn={() => saveColumn(column)}
+                        onDeleteColumn={() => deleteColumn(column)}
+                        onAddTask={() => setTaskDialog({ columnId: column.id })}
+                        onEditTask={(task) =>
+                          setTaskDialog({ columnId: column.id, task })
+                        }
+                        onDeleteTask={deleteTask}
+                        onDropTask={moveTask}
+                        onOpenComments={setCommentTask}
+                      />
+                    ))}
                   </div>
-                </div>
-                <div className="flex min-h-127.5 gap-4 overflow-x-auto pb-3">
-                  {boardColumns.map((column) => (
-                    <KanbanColumn
-                      key={column.id}
-                      column={column}
-                      tasks={tasks
-                        .filter((task) => task.columnId === column.id)
-                        .sort((a, b) => a.position - b.position)}
-                      editing={editingColumn === column.id}
-                      columnName={columnName}
-                      onColumnName={setColumnName}
-                      onEditColumn={() => {
-                        setEditingColumn(column.id);
-                        setColumnName(column.name);
-                      }}
-                      onSaveColumn={() => saveColumn(column)}
-                      onDeleteColumn={() => deleteColumn(column)}
-                      onAddTask={() => setTaskDialog({ columnId: column.id })}
-                      onEditTask={(task) =>
-                        setTaskDialog({ columnId: column.id, task })
-                      }
-                      onDeleteTask={deleteTask}
-                      onDropTask={moveTask}
-                      onOpenComments={setCommentTask}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <EmptyBoard onCreate={() => setBoardDialog(true)} />
-            )}
+                </>
+              ) : (
+                <EmptyBoard onCreate={() => setBoardDialog(true)} />
+              )}
             </main>
-            {commentTask && <TaskCommentsPanel task={commentTask} onClose={() => setCommentTask(null)} />}
+            {commentTask && (
+              <TaskCommentsPanel
+                task={commentTask}
+                onClose={() => setCommentTask(null)}
+              />
+            )}
           </BoardRoom>
         </div>
       </div>
@@ -432,24 +456,49 @@ export function KanbanWorkspace({
           }}
         />
       )}
-      {selectedBoard && collaborationOpen && <CollaborationDialog board={selectedBoard} onClose={() => setCollaborationOpen(false)} />}
+      {selectedBoard && collaborationOpen && (
+        <CollaborationDialog
+          board={selectedBoard}
+          onClose={() => setCollaborationOpen(false)}
+        />
+      )}
     </div>
   );
 }
 
-function BoardRoom({ board, onRemoteMutation, children }: { board?: Board; onRemoteMutation: () => void; children: ReactNode }) {
+function BoardRoom({
+  board,
+  onRemoteMutation,
+  children,
+}: {
+  board?: Board;
+  onRemoteMutation: () => void;
+  children: ReactNode;
+}) {
   if (!board) return <>{children}</>;
-  return <RoomProvider id={roomIdForBoard(board.id)} initialPresence={{}}><RealtimeBridge boardId={board.id} onRemoteMutation={onRemoteMutation} />{children}</RoomProvider>;
+  return (
+    <RoomProvider id={roomIdForBoard(board.id)} initialPresence={{}}>
+      <RealtimeBridge boardId={board.id} onRemoteMutation={onRemoteMutation} />
+      {children}
+    </RoomProvider>
+  );
 }
 
-function RealtimeBridge({ boardId, onRemoteMutation }: { boardId: number; onRemoteMutation: () => void }) {
+function RealtimeBridge({
+  boardId,
+  onRemoteMutation,
+}: {
+  boardId: number;
+  onRemoteMutation: () => void;
+}) {
   const broadcast = useBroadcastEvent();
   useEventListener((message) => {
     if (message.event.type === 'board-mutated') onRemoteMutation();
   });
   useEffect(() => {
     const handler = (event: Event) => {
-      if (event instanceof CustomEvent && event.detail === boardId) broadcast({ type: 'board-mutated' });
+      if (event instanceof CustomEvent && event.detail === boardId)
+        broadcast({ type: 'board-mutated' });
     };
     window.addEventListener('flowbase-kanban-mutated', handler);
     return () => window.removeEventListener('flowbase-kanban-mutated', handler);
@@ -459,31 +508,239 @@ function RealtimeBridge({ boardId, onRemoteMutation }: { boardId: number; onRemo
 
 function ActiveCollaborators({ onOpen }: { onOpen: () => void }) {
   const others = useOthers();
-  return <button onClick={onOpen} title="Open collaboration settings" className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-2 transition hover:border-primary/40"><Users className="mr-1.5 size-4 text-primary" />{others.slice(0, 3).map((user) => { const info = user.info; return <span key={user.connectionId} className="-ml-1 grid size-6 place-items-center overflow-hidden rounded-full border-2 border-card bg-primary text-[9px] font-bold text-primary-foreground">{info?.avatar ? <img src={info.avatar} alt="" className="size-full object-cover" /> : (info?.name || '?').slice(0, 2).toUpperCase()}</span>; })}<span className="ml-1 text-xs font-semibold text-muted-foreground">{others.length ? `${others.length} active` : 'Collaborate'}</span></button>;
+  return (
+    <button
+      onClick={onOpen}
+      title="Open collaboration settings"
+      className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-2 transition hover:border-primary/40"
+    >
+      <Users className="mr-1.5 size-4 text-primary" />
+      {others.slice(0, 3).map((user) => {
+        const info = user.info;
+        return (
+          <span
+            key={user.connectionId}
+            className="-ml-1 grid size-6 place-items-center overflow-hidden rounded-full border-2 border-card bg-primary text-[9px] font-bold text-primary-foreground"
+          >
+            {info?.avatar ? (
+              <img
+                src={info.avatar}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : (
+              (info?.name || '?').slice(0, 2).toUpperCase()
+            )}
+          </span>
+        );
+      })}
+      <span className="ml-1 text-xs font-semibold text-muted-foreground">
+        {others.length ? `${others.length} active` : 'Collaborate'}
+      </span>
+    </button>
+  );
 }
 
-function TaskCommentBadge({ taskId, onOpen }: { taskId: number; onOpen: () => void }) {
+function TaskCommentBadge({
+  taskId,
+  onOpen,
+}: {
+  taskId: number;
+  onOpen: () => void;
+}) {
   const { threads = [] } = useThreads();
-  const count = threads.filter((thread) => thread.metadata.taskId === String(taskId)).reduce((total, thread) => total + thread.comments.length, 0);
-  return <button onClick={(event) => { event.stopPropagation(); onOpen(); }} className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-muted-foreground transition hover:bg-secondary hover:text-primary" title="Open task comments"><MessageCircle className="size-3.5" />{count > 0 && <span className="text-[10px] font-bold">{count}</span>}</button>;
+  const count = threads
+    .filter((thread) => thread.metadata.taskId === String(taskId))
+    .reduce((total, thread) => total + thread.comments.length, 0);
+  return (
+    <button
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen();
+      }}
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-muted-foreground transition hover:bg-secondary hover:text-primary"
+      title="Open task comments"
+    >
+      <MessageCircle className="size-3.5" />
+      {count > 0 && <span className="text-[10px] font-bold">{count}</span>}
+    </button>
+  );
 }
 
-type CollaboratorProfile = { clerkId: string; name: string | null; email: string | null; imageUrl: string | null };
-function CollaborationDialog({ board, onClose }: { board: Board; onClose: () => void }) {
+type CollaboratorProfile = {
+  clerkId: string;
+  name: string | null;
+  email: string | null;
+  imageUrl: string | null;
+};
+function CollaborationDialog({
+  board,
+  onClose,
+}: {
+  board: Board;
+  onClose: () => void;
+}) {
   const [profiles, setProfiles] = useState<CollaboratorProfile[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  useEffect(() => { void fetch(`/api/kanban/${board.id}/collaborators`).then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error); setProfiles([data.owner, ...data.collaborators]); setIsOwner(data.isOwner); }).catch((err) => setError(err instanceof Error ? err.message : 'Could not load collaborators.')); }, [board.id]);
-  const invite = async (event: FormEvent) => { event.preventDefault(); setSaving(true); setError(''); try { const response = await fetch(`/api/kanban/${board.id}/collaborators`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setProfiles((current) => current.some((profile) => profile.clerkId === data.collaborator.clerkId) ? current : [...current, data.collaborator]); setEmail(''); } catch (err) { setError(err instanceof Error ? err.message : 'Could not invite this user.'); } finally { setSaving(false); } };
-  return <Modal title="Settings / Collaboration" onClose={onClose}><div className="space-y-5"><div className="rounded-xl bg-secondary/60 p-3"><p className="text-sm font-semibold">Shared with</p><div className="mt-3 space-y-2">{profiles.length ? profiles.map((profile, index) => <div key={profile.clerkId} className="flex items-center gap-3 rounded-lg bg-card p-2"><span className="grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-xs font-bold text-primary-foreground">{profile.imageUrl ? <img src={profile.imageUrl} alt="" className="size-full object-cover" /> : (profile.name || profile.email || '?').slice(0, 2).toUpperCase()}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{profile.name || 'Flowbase collaborator'}</span><span className="block truncate text-xs text-muted-foreground">{profile.email || 'No email available'}</span></span>{index === 0 && <span className="text-[10px] font-bold text-primary">OWNER</span>}</div>) : <p className="py-3 text-sm text-muted-foreground">No collaborators yet.</p>}</div></div>{isOwner && <form onSubmit={invite} className="space-y-3"><label className="block text-sm font-semibold">Invite by email<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="teammate@company.com" className="mt-1.5 h-10 w-full rounded-xl border border-border bg-background px-3 outline-none ring-primary/30 focus:ring-4" /></label>{error && <p className="text-sm text-destructive">{error}</p>}<button disabled={saving} className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-60"><Share2 className="size-4" />{saving ? 'Inviting…' : 'Invite collaborator'}</button></form>}{!isOwner && <p className="rounded-xl border border-border p-3 text-sm text-muted-foreground">Only the board owner can invite collaborators.</p>}</div></Modal>;
+  useEffect(() => {
+    void fetch(`/api/kanban/${board.id}/collaborators`)
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        setProfiles([data.owner, ...data.collaborators]);
+        setIsOwner(data.isOwner);
+      })
+      .catch((err) =>
+        setError(
+          err instanceof Error ? err.message : 'Could not load collaborators.',
+        ),
+      );
+  }, [board.id]);
+  const invite = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const response = await fetch(`/api/kanban/${board.id}/collaborators`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setProfiles((current) =>
+        current.some((profile) => profile.clerkId === data.collaborator.clerkId)
+          ? current
+          : [...current, data.collaborator],
+      );
+      setEmail('');
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not invite this user.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <Modal title="Settings / Collaboration" onClose={onClose}>
+      <div className="space-y-5">
+        <div className="rounded-xl bg-secondary/60 p-3">
+          <p className="text-sm font-semibold">Shared with</p>
+          <div className="mt-3 space-y-2">
+            {profiles.length ? (
+              profiles.map((profile, index) => (
+                <div
+                  key={profile.clerkId}
+                  className="flex items-center gap-3 rounded-lg bg-card p-2"
+                >
+                  <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {profile.imageUrl ? (
+                      <img
+                        src={profile.imageUrl}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      (profile.name || profile.email || '?')
+                        .slice(0, 2)
+                        .toUpperCase()
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">
+                      {profile.name || 'Flowbase collaborator'}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {profile.email || 'No email available'}
+                    </span>
+                  </span>
+                  {index === 0 && (
+                    <span className="text-[10px] font-bold text-primary">
+                      OWNER
+                    </span>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="py-3 text-sm text-muted-foreground">
+                No collaborators yet.
+              </p>
+            )}
+          </div>
+        </div>
+        {isOwner && (
+          <form onSubmit={invite} className="space-y-3">
+            <label className="block text-sm font-semibold">
+              Invite by email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="teammate@company.com"
+                className="mt-1.5 h-10 w-full rounded-xl border border-border bg-background px-3 outline-none ring-primary/30 focus:ring-4"
+              />
+            </label>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <button
+              disabled={saving}
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              <Share2 className="size-4" />
+              {saving ? 'Inviting…' : 'Invite collaborator'}
+            </button>
+          </form>
+        )}
+        {!isOwner && (
+          <p className="rounded-xl border border-border p-3 text-sm text-muted-foreground">
+            Only the board owner can invite collaborators.
+          </p>
+        )}
+      </div>
+    </Modal>
+  );
 }
 
-function TaskCommentsPanel({ task, onClose }: { task: Task; onClose: () => void }) {
+function TaskCommentsPanel({
+  task,
+  onClose,
+}: {
+  task: Task;
+  onClose: () => void;
+}) {
   const { threads = [] } = useThreads();
-  const taskThreads = threads.filter((thread) => thread.metadata.taskId === String(task.id));
-  return <LiveblocksUiConfig emojibaseUrl="https://unpkg.com/emojibase-data"><Modal title={`Comments · ${task.title}`} onClose={onClose}><div className="space-y-4"><p className="text-sm text-muted-foreground">Discuss this task with everyone who has access to the board.</p><div className="max-h-[48vh] space-y-3 overflow-y-auto">{taskThreads.length ? taskThreads.map((thread) => <Thread key={thread.id} thread={thread} />) : <div className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">No comments yet. Start the conversation below.</div>}</div><div className="rounded-xl border border-border bg-secondary/40 p-2"><Composer metadata={{ taskId: String(task.id) }} /></div></div></Modal></LiveblocksUiConfig>;
+  const taskThreads = threads.filter(
+    (thread) => thread.metadata.taskId === String(task.id),
+  );
+  return (
+    <LiveblocksUiConfig emojibaseUrl="https://unpkg.com/emojibase-data">
+      <Modal title={`Comments · ${task.title}`} onClose={onClose}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Discuss this task with everyone who has access to the board.
+          </p>
+          <div className="max-h-[48vh] space-y-3 overflow-y-auto">
+            {taskThreads.length ? (
+              taskThreads.map((thread) => (
+                <Thread key={thread.id} thread={thread} />
+              ))
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+                No comments yet. Start the conversation below.
+              </div>
+            )}
+          </div>
+          <div className="rounded-xl border border-border bg-secondary/40 p-2">
+            <Composer metadata={{ taskId: String(task.id) }} />
+          </div>
+        </div>
+      </Modal>
+    </LiveblocksUiConfig>
+  );
 }
 
 function KanbanColumn({
@@ -606,11 +863,11 @@ function TaskCard({
       onClick={onEdit}
       className="group cursor-grab rounded-xl border border-border/70 bg-card p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md active:cursor-grabbing"
     >
-        <div className="flex gap-2">
-          <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5">
-            {task.title}
-          </h4>
-          <TaskCommentBadge taskId={task.id} onOpen={onOpenComments} />
+      <div className="flex gap-2">
+        <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5">
+          {task.title}
+        </h4>
+        <TaskCommentBadge taskId={task.id} onOpen={onOpenComments} />
         <button
           onClick={(event) => {
             event.stopPropagation();

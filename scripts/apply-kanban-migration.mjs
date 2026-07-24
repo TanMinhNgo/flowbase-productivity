@@ -14,6 +14,7 @@ const migrations = [
   '0001_kanban.sql',
   '0002_kanban_in_review.sql',
   '0003_kanban_collaborators.sql',
+  '0004_notes.sql',
 ];
 let appliedStatements = 0;
 
@@ -31,5 +32,5 @@ for (const migrationName of migrations) {
 }
 
 console.log(
-  `Applied ${appliedStatements} Kanban migration statements through Neon HTTP.`,
+  `Applied ${appliedStatements} workspace migration statements through Neon HTTP.`,
 );

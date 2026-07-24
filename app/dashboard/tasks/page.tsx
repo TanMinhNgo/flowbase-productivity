@@ -4,7 +4,12 @@ import { redirect } from 'next/navigation';
 
 import { KanbanWorkspace } from '@/components/kanban/kanban-workspace';
 import { db } from '@/db';
-import { kanbanBoardCollaborators, kanbanBoards, kanbanColumns, kanbanTasks } from '@/db/schema';
+import {
+  kanbanBoardCollaborators,
+  kanbanBoards,
+  kanbanColumns,
+  kanbanTasks,
+} from '@/db/schema';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +28,10 @@ export default async function TasksPage() {
     .where(eq(kanbanBoardCollaborators.clerkId, userId));
   const sharedIds = memberships.map((membership) => membership.boardId);
   const sharedBoards = sharedIds.length
-    ? await db.select().from(kanbanBoards).where(inArray(kanbanBoards.id, sharedIds))
+    ? await db
+        .select()
+        .from(kanbanBoards)
+        .where(inArray(kanbanBoards.id, sharedIds))
     : [];
   const boards = [
     ...ownedBoards,

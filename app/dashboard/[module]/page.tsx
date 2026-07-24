@@ -2,7 +2,6 @@ import {
   Bot,
   BrainCircuit,
   FileStack,
-  NotebookPen,
   PanelsTopLeft,
   Settings2,
 } from 'lucide-react';
@@ -15,13 +14,6 @@ const modules = {
       'Ask Flowbase to organize an idea, draft a plan, or create your next workspace building block.',
     icon: Bot,
     tone: 'text-[#7255d8] bg-[#eeeaff]',
-  },
-  notes: {
-    title: 'Notes',
-    description:
-      'Build a connected library of ideas, documents, and decisions without losing the context around them.',
-    icon: NotebookPen,
-    tone: 'text-[#c55a7c] bg-[#ffedf3]',
   },
   whiteboard: {
     title: 'Whiteboard',

@@ -49,9 +49,15 @@ export async function GET() {
     .where(eq(kanbanBoardCollaborators.clerkId, userId));
   const sharedIds = memberships.map((membership) => membership.boardId);
   const sharedBoards = sharedIds.length
-    ? await db.select().from(kanbanBoards).where(inArray(kanbanBoards.id, sharedIds))
+    ? await db
+        .select()
+        .from(kanbanBoards)
+        .where(inArray(kanbanBoards.id, sharedIds))
     : [];
-  const boards = [...ownedBoards, ...sharedBoards.filter((board) => board.clerkId !== userId)].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  const boards = [
+    ...ownedBoards,
+    ...sharedBoards.filter((board) => board.clerkId !== userId),
+  ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
   const boardIds = boards.map((board) => board.id);
   if (!boardIds.length)
     return NextResponse.json({ boards, columns: [], tasks: [] });

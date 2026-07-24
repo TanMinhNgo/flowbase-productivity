@@ -311,3 +311,80 @@ html.dark [class~='dark:text-[#dbe8ff]'] {
 .lb-portal.lb-emoji-picker {
   z-index: 70 !important;
 }
+
+/* Notes editor blocks inherit the workspace's Sunset Horizon tokens. */
+.flowbase-editor {
+  min-height: 100%;
+  color: var(--foreground);
+  font-size: 0.975rem;
+  line-height: 1.85;
+}
+
+.flowbase-editor > * + * {
+  margin-top: 0.9rem;
+}
+
+.flowbase-editor h1,
+.flowbase-editor h2,
+.flowbase-editor h3 {
+  color: var(--foreground);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.flowbase-editor h1 {
+  font-size: 1.85rem;
+  margin-top: 1.75rem;
+}
+.flowbase-editor h2 {
+  font-size: 1.45rem;
+  margin-top: 1.5rem;
+}
+.flowbase-editor h3 {
+  font-size: 1.15rem;
+  margin-top: 1.25rem;
+}
+.flowbase-editor ul,
+.flowbase-editor ol {
+  padding-left: 1.35rem;
+}
+.flowbase-editor li + li {
+  margin-top: 0.25rem;
+}
+.flowbase-editor blockquote {
+  border-left: 3px solid var(--primary);
+  color: var(--muted-foreground);
+  padding-left: 1rem;
+}
+.flowbase-editor pre {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 1rem;
+}
+.flowbase-editor mark {
+  border-radius: 0.25rem;
+  background: color-mix(in oklch, var(--accent), transparent 55%);
+  color: inherit;
+  padding: 0.05rem 0.18rem;
+}
+.flowbase-editor .is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.flowbase-editor ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.flowbase-editor ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.55rem;
+}
+.flowbase-editor ul[data-type='taskList'] label {
+  margin-top: 0.28rem;
+}

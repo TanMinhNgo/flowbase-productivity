@@ -103,7 +103,31 @@ export const kanbanTasks = pgTable(
   ],
 );
 
+export const notes = pgTable(
+  'notes',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    title: text('title').notNull().default('Untitled note'),
+    content: text('content')
+      .notNull()
+      .default('{"type":"doc","content":[{"type":"paragraph"}]}'),
+    plainText: text('plain_text').notNull().default(''),
+    color: text('color').notNull().default('coral'),
+    isPinned: boolean('is_pinned').notNull().default(false),
+    deletedAt: timestamp('deleted_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('notes_clerk_id_idx').on(table.clerkId),
+    index('notes_clerk_id_deleted_at_idx').on(table.clerkId, table.deletedAt),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CalendarItem = typeof calendarItems.$inferSelect;
 export type NewCalendarItem = typeof calendarItems.$inferInsert;
+export type Note = typeof notes.$inferSelect;
+export type NewNote = typeof notes.$inferInsert;
