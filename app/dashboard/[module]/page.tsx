@@ -1,4 +1,4 @@
-import { Bot, BrainCircuit, FileStack, Settings2 } from 'lucide-react';
+import { Bot, BrainCircuit, Settings2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 const modules = {
@@ -8,13 +8,6 @@ const modules = {
       'Ask Flowbase to organize an idea, draft a plan, or create your next workspace building block.',
     icon: Bot,
     tone: 'text-[#7255d8] bg-[#eeeaff]',
-  },
-  spaces: {
-    title: 'Pages / Spaces',
-    description:
-      'Create focused homes for your projects, teams, and ongoing areas of work.',
-    icon: FileStack,
-    tone: 'text-[#6c7b3d] bg-[#f1f6df]',
   },
   templates: {
     title: 'AI Template Builder',

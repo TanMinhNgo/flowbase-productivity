@@ -395,3 +395,37 @@ html.dark [class~='dark:text-[#dbe8ff]'] {
 .flowbase-editor ul[data-type='taskList'] label {
   margin-top: 0.28rem;
 }
+
+.spaces-editor {
+  min-height: 42vh;
+  color: var(--foreground);
+  font-size: 0.975rem;
+  line-height: 1.85;
+}
+.spaces-editor > * + * {
+  margin-top: 0.9rem;
+}
+.spaces-editor h2 {
+  margin-top: 1.5rem;
+  color: var(--foreground);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.spaces-editor ul,
+.spaces-editor ol {
+  padding-left: 1.35rem;
+}
+.spaces-editor .is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+/* The Pages list owns action popovers. Keep them above the final row instead
+   of clipping them inside the rounded table shell. */
+main > section > div.mt-8.overflow-hidden.rounded-2xl {
+  overflow: visible;
+}

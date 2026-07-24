@@ -141,6 +141,65 @@ export const whiteboards = pgTable(
   (table) => [index('whiteboards_clerk_id_idx').on(table.clerkId)],
 );
 
+export const spaces = pgTable(
+  'spaces',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    color: text('color').notNull().default('violet'),
+    isFavorite: boolean('is_favorite').notNull().default(false),
+    archivedAt: timestamp('archived_at'),
+    lastOpenedAt: timestamp('last_opened_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('spaces_clerk_id_idx').on(table.clerkId),
+    index('spaces_clerk_id_archived_at_idx').on(table.clerkId, table.archivedAt),
+  ],
+);
+
+export const spaceCollaborators = pgTable(
+  'space_collaborators',
+  {
+    id: serial('id').primaryKey(),
+    spaceId: integer('space_id').notNull(),
+    clerkId: text('clerk_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('space_collaborators_space_user_idx').on(table.spaceId, table.clerkId),
+    index('space_collaborators_clerk_id_idx').on(table.clerkId),
+  ],
+);
+
+export const spacePages = pgTable(
+  'space_pages',
+  {
+    id: serial('id').primaryKey(),
+    spaceId: integer('space_id').notNull(),
+    title: text('title').notNull().default('Untitled page'),
+    template: text('template').notNull().default('Blank Page'),
+    description: text('description').notNull().default(''),
+    content: text('content')
+      .notNull()
+      .default('{"type":"doc","content":[{"type":"paragraph"}]}'),
+    plainText: text('plain_text').notNull().default(''),
+    isFavorite: boolean('is_favorite').notNull().default(false),
+    archivedAt: timestamp('archived_at'),
+    createdBy: text('created_by').notNull(),
+    updatedBy: text('updated_by').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('space_pages_space_id_idx').on(table.spaceId),
+    index('space_pages_space_id_archived_at_idx').on(table.spaceId, table.archivedAt),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CalendarItem = typeof calendarItems.$inferSelect;
@@ -149,3 +208,7 @@ export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
 export type Whiteboard = typeof whiteboards.$inferSelect;
 export type NewWhiteboard = typeof whiteboards.$inferInsert;
+export type Space = typeof spaces.$inferSelect;
+export type NewSpace = typeof spaces.$inferInsert;
+export type SpacePage = typeof spacePages.$inferSelect;
+export type NewSpacePage = typeof spacePages.$inferInsert;
