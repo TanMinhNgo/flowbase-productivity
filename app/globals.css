@@ -318,6 +318,13 @@ html.dark [class~='dark:text-[#dbe8ff]'] {
   color: var(--foreground);
   font-size: 0.975rem;
   line-height: 1.85;
+  outline: none !important;
+}
+
+.flowbase-editor:focus,
+.flowbase-editor.ProseMirror-focused {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .flowbase-editor > * + * {

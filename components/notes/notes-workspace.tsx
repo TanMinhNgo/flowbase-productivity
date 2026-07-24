@@ -78,13 +78,13 @@ const slashActions = [
     'Heading 1',
     Heading1,
     (editor: TiptapEditor) =>
-      editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      editor.chain().focus().setNode('heading', { level: 1 }).run(),
   ],
   [
     'Heading 2',
     Heading2,
     (editor: TiptapEditor) =>
-      editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      editor.chain().focus().setNode('heading', { level: 2 }).run(),
   ],
   [
     'Bullet list',
@@ -255,14 +255,14 @@ function Editor({
       <IconButton
         label="Heading 1"
         active={editor.isActive('heading', { level: 1 })}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        onClick={() => editor.chain().focus().setNode('heading', { level: 1 }).run()}
       >
         <Heading1 size={16} />
       </IconButton>
       <IconButton
         label="Heading 2"
         active={editor.isActive('heading', { level: 2 })}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        onClick={() => editor.chain().focus().setNode('heading', { level: 2 }).run()}
       >
         <Heading2 size={16} />
       </IconButton>
@@ -720,7 +720,7 @@ export function NotesWorkspace() {
         </div>
       ) : null}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-16 items-center gap-2 border-b border-border px-4 sm:px-6">
+        <header className="relative z-20 flex min-h-16 items-center gap-2 border-b border-border bg-card px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -760,7 +760,7 @@ export function NotesWorkspace() {
                 >
                   <CircleDot size={16} />
                 </button>
-                <div className="absolute right-0 top-9 hidden w-40 rounded-xl border border-border bg-card p-2 shadow-lg group-hover:block group-focus-within:block">
+                <div className="absolute right-0 top-9 z-30 hidden w-40 rounded-xl border border-border bg-card p-2 shadow-lg group-hover:block group-focus-within:block">
                   {(Object.keys(COLORS) as NoteColor[]).map((color) => (
                     <button
                       key={color}
