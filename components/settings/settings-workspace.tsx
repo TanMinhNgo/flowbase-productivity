@@ -50,6 +50,7 @@ type Category = {
   name: string;
   color: string;
   icon: string;
+  readOnly?: boolean;
 };
 type Section =
   'profile' | 'subscription' | 'categories' | 'ai' | 'preferences' | 'privacy';
@@ -484,15 +485,15 @@ export function SettingsWorkspace() {
                                 {item.color.toUpperCase()}
                               </p>
                             </div>
-                            <button
+                            {!item.readOnly ? <button
                               type="button"
                               onClick={() => editCategory(item)}
                               className="rounded-md p-2 text-[#6f717c] hover:bg-[#fff1e8] hover:text-[#df7565]"
                               aria-label={`Edit ${item.name}`}
                             >
                               <Pencil size={15} />
-                            </button>
-                            <button
+                            </button> : null}
+                            {!item.readOnly ? <button
                               type="button"
                               onClick={() =>
                                 void deleteCategory.mutateAsync(item.id)
@@ -501,7 +502,7 @@ export function SettingsWorkspace() {
                               aria-label={`Delete ${item.name}`}
                             >
                               <Trash2 size={15} />
-                            </button>
+                            </button> : <span className="text-[10px] font-semibold text-[#9a8d78]">In use</span>}
                           </div>
                         ))
                       ) : (
@@ -524,7 +525,9 @@ export function SettingsWorkspace() {
                     onChange={(e) => save({ aiModel: e.target.value })}
                     className={selectClass}
                   >
-                    <option value="gpt-5.6-luna">Flowbase Smart</option>
+                    <option value="gpt-5.6-luna">gpt-5.6-luna</option>
+                    <option value="gpt-5.6-mini">gpt-5.6-mini</option>
+                    <option value="gpt-5.6-nano">gpt-5.6-nano</option>
                   </select>
                 </Field>
                 <Field label="Default behavior">

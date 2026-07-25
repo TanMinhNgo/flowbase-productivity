@@ -4,7 +4,11 @@ import { db } from '@/db';
 import { monthlyUsage, userSettings } from '@/db/schema';
 
 const monthKey = () => new Date().toISOString().slice(0, 7);
-export const AI_MODELS = ['gpt-5.6-luna'] as const;
+export const AI_MODELS = [
+  'gpt-5.6-luna',
+  'gpt-5.6-mini',
+  'gpt-5.6-nano',
+] as const;
 
 export async function hasProPlan(clerkId: string) {
   try {

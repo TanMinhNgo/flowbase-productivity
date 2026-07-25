@@ -8,7 +8,7 @@ const allowed = {
   theme: ['light', 'dark', 'system'],
   calendarView: ['month', 'week'],
   taskPriority: ['low', 'medium', 'high'],
-  aiModel: ['gpt-5.6-luna'],
+  aiModel: ['gpt-5.6-luna', 'gpt-5.6-mini', 'gpt-5.6-nano'],
   aiTone: ['balanced', 'friendly', 'professional', 'direct'],
   aiBehavior: ['concise', 'detailed', 'structured'],
 } as const;
