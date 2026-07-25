@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { WorkspaceLoading } from '@/components/ui/workspace-loading';
 
 type Color = 'coral' | 'apricot' | 'rose' | 'violet' | 'sky' | 'mint';
 type Profile = {
@@ -194,6 +195,7 @@ export function SpacesWorkspace() {
   const [sort, setSort] = useState('updated');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const load = async () => {
     try {
       setSpaces((await request<{ items: Space[] }>('/api/spaces')).items);
@@ -201,11 +203,14 @@ export function SpacesWorkspace() {
       setError(
         reason instanceof Error ? reason.message : 'Could not load spaces.',
       );
+    } finally {
+      setIsLoading(false);
     }
   };
   useEffect(() => {
     void load();
   }, []);
+  if (isLoading) return <WorkspaceLoading />;
   const visible = useMemo(
     () =>
       spaces

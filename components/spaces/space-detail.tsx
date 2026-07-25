@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { WorkspaceLoading } from '@/components/ui/workspace-loading';
 
 type Page = {
   id: number;
@@ -280,11 +281,7 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
       );
   };
   if (!space && !error)
-    return (
-      <div className="grid min-h-80 place-items-center text-sm text-muted-foreground">
-        Loading Space…
-      </div>
-    );
+    return <WorkspaceLoading />;
   if (!space)
     return (
       <div className="grid min-h-80 place-items-center text-sm text-destructive">

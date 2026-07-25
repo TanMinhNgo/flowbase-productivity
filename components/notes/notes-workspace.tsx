@@ -47,6 +47,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAssemblyAIStreaming } from '@/hooks/use-assemblyai-streaming';
+import { WorkspaceLoading } from '@/components/ui/workspace-loading';
 
 type NoteColor = 'coral' | 'apricot' | 'rose' | 'violet' | 'sky' | 'mint';
 type Note = {
@@ -541,6 +542,7 @@ export function NotesWorkspace() {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [load]);
+  if (status === 'loading') return <WorkspaceLoading variant="editor" />;
   const replace = (note: Note) =>
     setItems((current) =>
       current

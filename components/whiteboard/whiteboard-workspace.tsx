@@ -21,6 +21,7 @@ import type {
   DiagramSpec,
   WhiteboardScene,
 } from '@/components/whiteboard/excalidraw-canvas';
+import { WorkspaceLoading } from '@/components/ui/workspace-loading';
 
 const ExcalidrawCanvas = dynamic(
   () =>
@@ -264,6 +265,7 @@ export function WhiteboardWorkspace() {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [load]);
+  if (status === 'loading') return <WorkspaceLoading variant="canvas" />;
 
   const patch = useCallback(
     async (id: number, body: Record<string, unknown>) => {

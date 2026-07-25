@@ -19,6 +19,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { WorkspaceLoading } from '@/components/ui/workspace-loading';
 
 type Page = {
   id: number;
@@ -151,11 +152,7 @@ export function SpacePageEditor({
     URL.revokeObjectURL(url);
   };
   if (!page || !space)
-    return (
-      <div className="grid min-h-80 place-items-center text-sm text-muted-foreground">
-        {error || 'Loading Page…'}
-      </div>
-    );
+    return error ? <div className="grid min-h-80 place-items-center text-sm text-destructive">{error}</div> : <WorkspaceLoading variant="editor" />;
   return (
     <section className="mx-auto max-w-[1080px] pb-10">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
