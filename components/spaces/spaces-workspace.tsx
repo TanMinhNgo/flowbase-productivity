@@ -368,7 +368,7 @@ export function SpacesWorkspace() {
           {visible.map((space) => (
             <article
               key={space.id}
-              className={`group relative rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${view === 'list' ? 'flex items-center gap-4' : ''}`}
+              className={`group relative rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${activeMenuId === space.id ? 'z-20' : 'z-0'} ${view === 'list' ? 'flex items-center gap-4' : ''}`}
             >
               <button
                 type="button"
