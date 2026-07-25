@@ -210,7 +210,7 @@ export function SpacesWorkspace() {
   useEffect(() => {
     void load();
   }, []);
-  if (isLoading) return <WorkspaceLoading />;
+
   const visible = useMemo(
     () =>
       spaces
@@ -240,6 +240,11 @@ export function SpacesWorkspace() {
         ),
     [spaces, query, tab, sort],
   );
+
+  // Do not return before useMemo. The first loading render and the later
+  // data-ready render must execute the same hooks in the same order.
+  if (isLoading) return <WorkspaceLoading />;
+
   const create = async (name: string, description: string, color: Color) => {
     const { item } = await request<{ item: Space }>('/api/spaces', {
       method: 'POST',
