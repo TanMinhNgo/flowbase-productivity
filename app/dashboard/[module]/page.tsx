@@ -1,14 +1,7 @@
-import { Bot, BrainCircuit, Settings2 } from 'lucide-react';
+import { BrainCircuit, Settings2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 const modules = {
-  'ai-assistant': {
-    title: 'AI Assistant',
-    description:
-      'Ask Flowbase to organize an idea, draft a plan, or create your next workspace building block.',
-    icon: Bot,
-    tone: 'text-[#7255d8] bg-[#eeeaff]',
-  },
   templates: {
     title: 'AI Template Builder',
     description:
