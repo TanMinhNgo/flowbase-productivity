@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { calendarItems } from '@/db/schema';
+import { calendarItems, customCategories } from '@/db/schema';
 
 function isDateKey(value: unknown): value is string {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -65,7 +65,22 @@ export async function PATCH(
     updates.kind = body.kind as string;
   }
   if ('category' in body) {
-    if (!categories.includes(body.category as (typeof categories)[number]))
+    const custom =
+      typeof body.category === 'string'
+        ? await db
+            .select({ id: customCategories.id })
+            .from(customCategories)
+            .where(
+              and(
+                eq(customCategories.clerkId, userId),
+                eq(customCategories.name, body.category),
+              ),
+            )
+        : [];
+    if (
+      !categories.includes(body.category as (typeof categories)[number]) &&
+      !custom[0]
+    )
       return NextResponse.json({ error: 'Invalid category.' }, { status: 400 });
     updates.category = body.category as string;
   }

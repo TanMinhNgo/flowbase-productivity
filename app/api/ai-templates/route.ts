@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { desc, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
+import { allowAi } from '@/lib/ai-settings';
 
 import { db } from '@/db';
 import { aiTemplates } from '@/db/schema';
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
       { error: 'AI Template Builder is not configured.' },
       { status: 503 },
     );
+  const ai = await allowAi(userId, 'templates');
+  if ('error' in ai)
+    return NextResponse.json({ error: ai.error }, { status: 403 });
   const body = (await request.json()) as Record<string, unknown>;
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   if (!prompt || prompt.length > 1600)
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
     );
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const response = await openai.responses.create({
-    model: 'gpt-5.6-luna',
+    model: ai.model,
     reasoning: { effort: 'low' },
     text: { verbosity: 'low' },
     safety_identifier: `flowbase-${userId}`,

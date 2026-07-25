@@ -114,6 +114,7 @@ export const notes = pgTable(
       .default('{"type":"doc","content":[{"type":"paragraph"}]}'),
     plainText: text('plain_text').notNull().default(''),
     color: text('color').notNull().default('coral'),
+    category: text('category').notNull().default('general'),
     isPinned: boolean('is_pinned').notNull().default(false),
     deletedAt: timestamp('deleted_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -235,6 +236,70 @@ export const aiTemplates = pgTable(
   ],
 );
 
+export const userSettings = pgTable(
+  'user_settings',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull().unique(),
+    theme: text('theme').notNull().default('system'),
+    notificationsEnabled: boolean('notifications_enabled')
+      .notNull()
+      .default(true),
+    calendarView: text('calendar_view').notNull().default('month'),
+    taskPriority: text('task_priority').notNull().default('medium'),
+    autoSave: boolean('auto_save').notNull().default(true),
+    aiModel: text('ai_model').notNull().default('gpt-5.6-luna'),
+    aiTone: text('ai_tone').notNull().default('balanced'),
+    aiBehavior: text('ai_behavior').notNull().default('concise'),
+    aiRefineEnabled: boolean('ai_refine_enabled').notNull().default(true),
+    aiAssistantEnabled: boolean('ai_assistant_enabled').notNull().default(true),
+    aiTemplatesEnabled: boolean('ai_templates_enabled').notNull().default(true),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [index('user_settings_clerk_id_idx').on(table.clerkId)],
+);
+
+export const customCategories = pgTable(
+  'custom_categories',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    scope: text('scope').notNull(),
+    name: text('name').notNull(),
+    color: text('color').notNull().default('#7c5ce0'),
+    icon: text('icon').notNull().default('Tag'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('custom_categories_clerk_id_idx').on(table.clerkId),
+    uniqueIndex('custom_categories_user_scope_name_idx').on(
+      table.clerkId,
+      table.scope,
+      table.name,
+    ),
+  ],
+);
+
+export const monthlyUsage = pgTable(
+  'monthly_usage',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    monthKey: text('month_key').notNull(),
+    aiRequests: integer('ai_requests').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('monthly_usage_user_month_idx').on(
+      table.clerkId,
+      table.monthKey,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CalendarItem = typeof calendarItems.$inferSelect;
@@ -249,3 +314,5 @@ export type SpacePage = typeof spacePages.$inferSelect;
 export type NewSpacePage = typeof spacePages.$inferInsert;
 export type AiTemplate = typeof aiTemplates.$inferSelect;
 export type NewAiTemplate = typeof aiTemplates.$inferInsert;
+export type UserSettings = typeof userSettings.$inferSelect;
+export type CustomCategory = typeof customCategories.$inferSelect;

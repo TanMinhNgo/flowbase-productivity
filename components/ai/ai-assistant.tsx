@@ -58,7 +58,8 @@ export function AiAssistant() {
           disabled={!messages.length || assistant.isPending}
           className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium hover:bg-secondary disabled:opacity-50"
         >
-          <RotateCcw size={15} /> <span className="hidden sm:inline">New chat</span>
+          <RotateCcw size={15} />{' '}
+          <span className="hidden sm:inline">New chat</span>
         </button>
       </header>
 
@@ -96,9 +97,12 @@ export function AiAssistant() {
             <span className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
               <Sparkles size={25} />
             </span>
-            <h2 className="mt-5 text-2xl font-semibold">What are we moving forward?</h2>
+            <h2 className="mt-5 text-2xl font-semibold">
+              What are we moving forward?
+            </h2>
             <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-              Ask for a plan, clearer next steps, a draft, or a thoughtful way to organize your work.
+              Ask for a plan, clearer next steps, a draft, or a thoughtful way
+              to organize your work.
             </p>
             <div className="mt-7 grid w-full gap-2 text-left sm:grid-cols-2">
               {prompts.map((prompt) => (
@@ -119,7 +123,10 @@ export function AiAssistant() {
         )}
       </div>
 
-      <form onSubmit={submit} className="shrink-0 border-t border-border bg-card p-4 sm:px-6">
+      <form
+        onSubmit={submit}
+        className="shrink-0 border-t border-border bg-card p-4 sm:px-6"
+      >
         <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-xl border border-border bg-background p-2 focus-within:ring-2 focus-within:ring-primary/20">
           <textarea
             ref={inputRef}

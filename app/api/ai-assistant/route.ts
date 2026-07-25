@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
+import { allowAi } from '@/lib/ai-settings';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -13,6 +14,9 @@ export async function POST(request: Request) {
       { error: 'AI Assistant is not configured.' },
       { status: 503 },
     );
+  const ai = await allowAi(userId, 'assistant');
+  if ('error' in ai)
+    return NextResponse.json({ error: ai.error }, { status: 403 });
 
   const body = (await request.json()) as { messages?: unknown };
   const messages = Array.isArray(body.messages)
@@ -41,15 +45,14 @@ export async function POST(request: Request) {
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const response = await openai.responses.create({
-    model: 'gpt-5.6-luna',
+    model: ai.model,
     reasoning: { effort: 'low' },
     text: { verbosity: 'low' },
     safety_identifier: `flowbase-${userId}`,
     input: [
       {
         role: 'developer',
-        content:
-          'You are Flowbase AI, a concise and encouraging productivity copilot. Help users plan work, break down tasks, draft notes, and decide next actions. Use readable Markdown with short headings and bullets when it improves clarity. Do not claim you created or changed app data unless the user explicitly asks for a draft they can copy.',
+        content: `You are Flowbase AI, a ${ai.tone} productivity copilot. Default response style: ${ai.behavior}. Help users plan work, break down tasks, draft notes, and decide next actions. Use readable Markdown with short headings and bullets when it improves clarity. Do not claim you created or changed app data unless the user explicitly asks for a draft they can copy.`,
       },
       ...messages.map((message) => ({
         role: message.role,

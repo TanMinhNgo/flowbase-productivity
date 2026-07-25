@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
+import { allowAi } from '@/lib/ai-settings';
 
 const actions = {
   grammar:
@@ -24,6 +25,9 @@ export async function POST(request: Request) {
       { error: 'AI Refine is not configured.' },
       { status: 503 },
     );
+  const ai = await allowAi(userId, 'refine');
+  if ('error' in ai)
+    return NextResponse.json({ error: ai.error }, { status: 403 });
 
   const body = (await request.json()) as Record<string, unknown>;
   const action = body.action as keyof typeof actions;
@@ -36,7 +40,7 @@ export async function POST(request: Request) {
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const response = await openai.responses.create({
-    model: 'gpt-5.6-luna',
+    model: ai.model,
     reasoning: { effort: 'low' },
     text: { verbosity: 'low' },
     safety_identifier: `flowbase-${userId}`,

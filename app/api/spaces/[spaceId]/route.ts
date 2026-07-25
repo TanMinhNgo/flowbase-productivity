@@ -81,21 +81,19 @@ export async function PATCH(
       .from(spacePages)
       .where(eq(spacePages.spaceId, space.id));
     if (pages.length)
-      await db
-        .insert(spacePages)
-        .values(
-          pages.map((page) => ({
-            spaceId: copy.id,
-            title: page.title,
-            template: page.template,
-            description: page.description,
-            content: page.content,
-            plainText: page.plainText,
-            isFavorite: false,
-            createdBy: userId,
-            updatedBy: userId,
-          })),
-        );
+      await db.insert(spacePages).values(
+        pages.map((page) => ({
+          spaceId: copy.id,
+          title: page.title,
+          template: page.template,
+          description: page.description,
+          content: page.content,
+          plainText: page.plainText,
+          isFavorite: false,
+          createdBy: userId,
+          updatedBy: userId,
+        })),
+      );
     return NextResponse.json({ item: copy }, { status: 201 });
   }
   const updates: Record<string, unknown> = { updatedAt: new Date() };

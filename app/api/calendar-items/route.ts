@@ -1,9 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { calendarItems } from '@/db/schema';
+import { calendarItems, customCategories } from '@/db/schema';
 
 const categories = ['work', 'personal', 'meeting', 'study', 'health'] as const;
 const kinds = ['task', 'reminder'] as const;
@@ -36,11 +36,28 @@ export async function POST(request: Request) {
   const scheduledDate = body.scheduledDate;
   const scheduledTime = body.scheduledTime;
 
+  const categoryAllowed =
+    categories.includes(category as (typeof categories)[number]) ||
+    Boolean(
+      typeof category === 'string' &&
+      (
+        await db
+          .select({ id: customCategories.id })
+          .from(customCategories)
+          .where(
+            and(
+              eq(customCategories.clerkId, userId),
+              eq(customCategories.name, category),
+            ),
+          )
+      )[0],
+    );
+
   if (
     !title ||
     title.length > 160 ||
     !kinds.includes(kind as (typeof kinds)[number]) ||
-    !categories.includes(category as (typeof categories)[number]) ||
+    !categoryAllowed ||
     (scheduledDate !== null && !isDateKey(scheduledDate)) ||
     (scheduledTime !== null &&
       (typeof scheduledTime !== 'string' ||

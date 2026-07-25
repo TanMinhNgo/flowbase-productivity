@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useCategories } from '@/hooks/api/use-settings';
 
 export type CalendarItemData = {
   id: number;
@@ -48,7 +49,7 @@ const categories = {
   },
 } as const;
 
-type Category = keyof typeof categories;
+type Category = string;
 type FormState = {
   title: string;
   kind: 'task' | 'reminder';
@@ -98,7 +99,9 @@ function formatTime(value: string | null) {
 }
 
 function categoryFor(item: CalendarItemData) {
-  return categories[item.category as Category] ?? categories.work;
+  return (
+    categories[item.category as keyof typeof categories] ?? categories.work
+  );
 }
 
 export function CalendarWorkspace({
@@ -106,6 +109,9 @@ export function CalendarWorkspace({
 }: {
   initialItems: CalendarItemData[];
 }) {
+  const categoryQuery = useCategories<{
+    items: Array<{ id: number; name: string; scope: string; color: string }>;
+  }>();
   const [today, setToday] = useState(() => new Date());
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(today);
@@ -124,6 +130,26 @@ export function CalendarWorkspace({
     scheduled: true,
   });
   const [editingItem, setEditingItem] = useState<CalendarItemData | null>(null);
+  const categoryOptions = useMemo(
+    () => [
+      ...Object.entries(categories).map(([key, category]) => ({
+        key,
+        label: category.label,
+        color: '',
+      })),
+      ...(categoryQuery.data?.items ?? [])
+        .filter(
+          (category) =>
+            category.scope === 'calendar' || category.scope === 'reminder',
+        )
+        .map((category) => ({
+          key: category.name,
+          label: category.name,
+          color: category.color,
+        })),
+    ],
+    [categoryQuery.data],
+  );
 
   // Client components render once on Vercel too. Reset this state after
   // hydration so "Today" follows the visitor's local browser timezone.
@@ -175,8 +201,7 @@ export function CalendarWorkspace({
     setForm({
       title: item.title,
       kind: item.kind === 'reminder' ? 'reminder' : 'task',
-      category:
-        item.category in categories ? (item.category as Category) : 'work',
+      category: item.category,
       date: item.scheduledDate ?? selectedDate,
       time: item.scheduledTime?.slice(0, 5) ?? '',
       notes: item.notes ?? '',
@@ -630,8 +655,8 @@ export function CalendarWorkspace({
                     }
                     className="mt-1.5 h-10 w-full rounded-lg border border-[#dce5f0] bg-white px-3 text-sm font-medium outline-none dark:border-white/10 dark:bg-white/4"
                   >
-                    {Object.entries(categories).map(([key, category]) => (
-                      <option key={key} value={key}>
+                    {categoryOptions.map((category) => (
+                      <option key={category.key} value={category.key}>
                         {category.label}
                       </option>
                     ))}

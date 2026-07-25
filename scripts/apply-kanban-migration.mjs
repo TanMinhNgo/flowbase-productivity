@@ -18,6 +18,7 @@ const migrations = [
   '0005_whiteboards.sql',
   '0006_spaces.sql',
   '0007_ai_templates.sql',
+  '0008_settings.sql',
 ];
 let appliedStatements = 0;
 

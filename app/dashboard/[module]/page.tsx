@@ -1,4 +1,4 @@
-import { BrainCircuit, Settings2 } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 const modules = {
@@ -8,13 +8,6 @@ const modules = {
       'Describe the system you need and Flowbase will help build a reusable starting point.',
     icon: BrainCircuit,
     tone: 'text-[#8a5cc7] bg-[#f4eaff]',
-  },
-  settings: {
-    title: 'Settings',
-    description:
-      'Shape Flowbase around your preferences, workspace structure, and collaboration needs.',
-    icon: Settings2,
-    tone: 'text-[#607187] bg-[#edf1f5]',
   },
 } as const;
 
