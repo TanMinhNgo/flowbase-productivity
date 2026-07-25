@@ -4,12 +4,11 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db';
 import { spaceCollaborators, spacePages, spaces, users } from '@/db/schema';
-import { seedStarterSpaces, SPACE_COLORS } from '@/lib/spaces';
+import { SPACE_COLORS } from '@/lib/spaces';
 
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  await seedStarterSpaces(userId);
   const owned = await db.select().from(spaces).where(eq(spaces.clerkId, userId));
   const memberships = await db.select({ spaceId: spaceCollaborators.spaceId }).from(spaceCollaborators).where(eq(spaceCollaborators.clerkId, userId));
   const sharedIds = memberships.map((item) => item.spaceId);
