@@ -8,6 +8,7 @@ import {
   FileText,
   Folder,
   MoreHorizontal,
+  Pencil,
   Plus,
   Share2,
   Star,
@@ -41,6 +42,16 @@ type Profile = {
   name: string | null;
   email: string | null;
   imageUrl: string | null;
+};
+type SpaceColor = 'coral' | 'apricot' | 'rose' | 'violet' | 'sky' | 'mint';
+
+const SPACE_COLORS: Record<SpaceColor, { label: string; className: string }> = {
+  coral: { label: 'Coral', className: 'bg-[#ff7e5f]' },
+  apricot: { label: 'Apricot', className: 'bg-[#f7a24e]' },
+  rose: { label: 'Rose', className: 'bg-[#df6287]' },
+  violet: { label: 'Violet', className: 'bg-[#9b76d8]' },
+  sky: { label: 'Sky', className: 'bg-[#4f9eca]' },
+  mint: { label: 'Mint', className: 'bg-[#46a68d]' },
 };
 const templates = [
   'Blank Page',
@@ -243,12 +254,83 @@ function InviteDialog({
   );
 }
 
+function SpaceSettingsDialog({
+  space,
+  onClose,
+  onSaved,
+}: {
+  space: Space;
+  onClose: () => void;
+  onSaved: (space: Space) => void;
+}) {
+  const [name, setName] = useState(space.name);
+  const [description, setDescription] = useState(space.description);
+  const [color, setColor] = useState<SpaceColor>(
+    SPACE_COLORS[space.color as SpaceColor] ? (space.color as SpaceColor) : 'violet',
+  );
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center p-4">
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/35" />
+      <form
+        className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSaving(true);
+          setError('');
+          void request<{ item: Space }>(`/api/spaces/${space.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ name, description, color }),
+          })
+            .then(({ item }) => {
+              onSaved(item);
+              onClose();
+            })
+            .catch((reason) =>
+              setError(reason instanceof Error ? reason.message : 'Could not update Space.'),
+            )
+            .finally(() => setSaving(false));
+        }}
+      >
+        <h2 className="text-lg font-semibold">Rename Space</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Update its name, description, or color.</p>
+        <label className="mt-5 block text-sm font-medium">
+          Space name
+          <input autoFocus value={name} onChange={(event) => setName(event.target.value)} className="mt-2 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+        </label>
+        <label className="mt-4 block text-sm font-medium">
+          Description
+          <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="mt-2 min-h-20 w-full resize-y rounded-xl border border-border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+        </label>
+        <div className="mt-4">
+          <p className="text-sm font-medium">Change color</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {(Object.keys(SPACE_COLORS) as SpaceColor[]).map((item) => (
+              <button key={item} type="button" onClick={() => setColor(item)} aria-label={SPACE_COLORS[item].label} className={`grid size-8 place-items-center rounded-full ${SPACE_COLORS[item].className} ${color === item ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
+                {color === item ? <span className="size-2 rounded-full bg-white" /> : null}
+              </button>
+            ))}
+          </div>
+        </div>
+        {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="h-10 rounded-xl px-4 text-sm hover:bg-secondary">Cancel</button>
+          <button disabled={!name.trim() || saving} className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? 'Saving…' : 'Save changes'}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export function SpaceDetail({ spaceId }: { spaceId: number }) {
   const router = useRouter();
   const [space, setSpace] = useState<Space | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [newOpen, setNewOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [error, setError] = useState('');
   const load = async () => {
@@ -339,6 +421,46 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
             </button>
             {menuOpen ? (
               <div className="absolute right-0 top-12 z-20 w-48 rounded-xl border border-border bg-card p-1.5 shadow-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                >
+                  <Pencil size={15} />
+                  Rename Space
+                </button>
+                <div className="mx-2 my-1 border-t border-border" />
+                <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Change color</p>
+                <div className="flex gap-1 px-2.5 pb-2">
+                  {(Object.keys(SPACE_COLORS) as SpaceColor[]).map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() =>
+                        void request<{ item: Space }>(`/api/spaces/${space.id}`, {
+                          method: 'PATCH',
+                          body: JSON.stringify({ color }),
+                        }).then(({ item }) => setSpace((current) => current ? { ...current, ...item } : item))
+                      }
+                      aria-label={`Change color to ${SPACE_COLORS[color].label}`}
+                      className={`size-5 rounded-full ${SPACE_COLORS[color].className} ${space.color === color ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-2 text-left text-sm font-medium text-primary hover:bg-primary/15"
+                >
+                  <Plus size={15} />
+                  Add Page
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -506,6 +628,13 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
       ) : null}
       {inviteOpen ? (
         <InviteDialog spaceId={spaceId} onClose={() => setInviteOpen(false)} />
+      ) : null}
+      {settingsOpen ? (
+        <SpaceSettingsDialog
+          space={space}
+          onClose={() => setSettingsOpen(false)}
+          onSaved={setSpace}
+        />
       ) : null}
     </section>
   );

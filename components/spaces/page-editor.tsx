@@ -1,20 +1,34 @@
 'use client';
 
 import Placeholder from '@tiptap/extension-placeholder';
+import Highlight from '@tiptap/extension-highlight';
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
+import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
   Archive,
   ArrowLeft,
   Bold,
+  CheckSquare,
   Copy,
   Download,
   FileText,
+  Heading1,
+  Heading2,
+  Highlighter,
   Italic,
+  List,
+  ListOrdered,
   MoreHorizontal,
+  Quote,
+  Redo2,
   Share2,
   Star,
   Trash2,
+  Underline as UnderlineIcon,
+  Undo2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -81,6 +95,10 @@ export function SpacePageEditor({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Underline,
+      Highlight.configure({ multicolor: true }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: 'Press / for commands' }),
     ],
     content: emptyDoc,
@@ -154,7 +172,7 @@ export function SpacePageEditor({
   if (!page || !space)
     return error ? <div className="grid min-h-80 place-items-center text-sm text-destructive">{error}</div> : <WorkspaceLoading variant="editor" />;
   return (
-    <section className="mx-auto max-w-[1080px] pb-10">
+    <section className="mx-auto max-w-270 pb-10">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link
           href={`/dashboard/spaces/${spaceId}`}
@@ -272,7 +290,7 @@ export function SpacePageEditor({
               if (event.target.value.trim())
                 void patch({ title: event.target.value });
             }}
-            className="w-full bg-transparent text-3xl font-semibold tracking-[-0.05em] outline-none"
+            className="w-full bg-transparent text-3xl font-semibold tracking-tighter outline-none"
             aria-label="Page title"
           />
           <textarea
@@ -285,11 +303,13 @@ export function SpacePageEditor({
             className="mt-3 min-h-12 w-full resize-none bg-transparent text-sm leading-6 text-muted-foreground outline-none"
           />
         </div>
-        <div className="mt-5 flex items-center gap-1 border-y border-border bg-secondary/25 px-4 py-2 sm:px-8">
+        <div className="mt-5 flex items-center gap-1 overflow-x-auto border-y border-border bg-secondary/25 px-4 py-2 sm:px-8">
           <button
             type="button"
             onClick={() => editor?.chain().focus().toggleBold().run()}
             className={`grid size-8 place-items-center rounded-lg ${editor?.isActive('bold') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Bold"
+            aria-label="Bold"
           >
             <Bold size={15} />
           </button>
@@ -297,8 +317,104 @@ export function SpacePageEditor({
             type="button"
             onClick={() => editor?.chain().focus().toggleItalic().run()}
             className={`grid size-8 place-items-center rounded-lg ${editor?.isActive('italic') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Italic"
+            aria-label="Italic"
           >
             <Italic size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+            className={`grid size-8 place-items-center rounded-lg ${editor?.isActive('underline') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Underline"
+            aria-label="Underline"
+          >
+            <UnderlineIcon size={15} />
+          </button>
+          <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('heading', { level: 1 }) ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Heading 1"
+            aria-label="Heading 1"
+          >
+            <Heading1 size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('heading', { level: 2 }) ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Heading 2"
+            aria-label="Heading 2"
+          >
+            <Heading2 size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('bulletList') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Bullet list"
+            aria-label="Bullet list"
+          >
+            <List size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('orderedList') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Numbered list"
+            aria-label="Numbered list"
+          >
+            <ListOrdered size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleTaskList().run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('taskList') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Checklist"
+            aria-label="Checklist"
+          >
+            <CheckSquare size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('blockquote') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Quote"
+            aria-label="Quote"
+          >
+            <Quote size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().toggleHighlight().run()}
+            className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('highlight') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+            title="Highlight"
+            aria-label="Highlight"
+          >
+            <Highlighter size={16} />
+          </button>
+          <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().undo().run()}
+            disabled={!editor?.can().undo()}
+            className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-35"
+            title="Undo"
+            aria-label="Undo"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor?.chain().focus().redo().run()}
+            disabled={!editor?.can().redo()}
+            className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-35"
+            title="Redo"
+            aria-label="Redo"
+          >
+            <Redo2 size={16} />
           </button>
         </div>
         <EditorContent editor={editor} />
