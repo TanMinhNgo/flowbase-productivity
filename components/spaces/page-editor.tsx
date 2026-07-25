@@ -78,8 +78,14 @@ export function SpacePageEditor({
   const space = pageQuery.data?.space ?? null;
   const patch = useCallback(
     async (body: Record<string, unknown>) => {
-      const result = await updatePageMutation.mutateAsync({ spaceId, pageId, body });
-      setDraftPage((current) => (current ? { ...current, ...result.item } : result.item));
+      const result = await updatePageMutation.mutateAsync({
+        spaceId,
+        pageId,
+        body,
+      });
+      setDraftPage((current) =>
+        current ? { ...current, ...result.item } : result.item,
+      );
       return result.item;
     },
     [spaceId, pageId, updatePageMutation],
@@ -155,7 +161,13 @@ export function SpacePageEditor({
     URL.revokeObjectURL(url);
   };
   if (!page || !space)
-    return error ? <div className="grid min-h-80 place-items-center text-sm text-destructive">{error}</div> : <WorkspaceLoading variant="editor" />;
+    return error ? (
+      <div className="grid min-h-80 place-items-center text-sm text-destructive">
+        {error}
+      </div>
+    ) : (
+      <WorkspaceLoading variant="editor" />
+    );
   return (
     <section className="mx-auto max-w-270 pb-10">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -208,7 +220,9 @@ export function SpacePageEditor({
                   type="button"
                   onClick={() =>
                     void patch({ duplicate: true }).then((copy) =>
-                      router.push(`/dashboard/spaces/${spaceId}/pages/${copy.id}`),
+                      router.push(
+                        `/dashboard/spaces/${spaceId}/pages/${copy.id}`,
+                      ),
                     )
                   }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
@@ -248,9 +262,11 @@ export function SpacePageEditor({
                   type="button"
                   onClick={() => {
                     if (window.confirm(`Delete ${page.title}?`))
-                      void deletePageMutation.mutateAsync({ spaceId, pageId }).then(() =>
-                        router.push(`/dashboard/spaces/${spaceId}`),
-                      );
+                      void deletePageMutation
+                        .mutateAsync({ spaceId, pageId })
+                        .then(() =>
+                          router.push(`/dashboard/spaces/${spaceId}`),
+                        );
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
                 >
@@ -315,7 +331,9 @@ export function SpacePageEditor({
           <span className="mx-1 h-5 w-px shrink-0 bg-border" />
           <button
             type="button"
-            onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 1 }).run()
+            }
             className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('heading', { level: 1 }) ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
             title="Heading 1"
             aria-label="Heading 1"
@@ -324,7 +342,9 @@ export function SpacePageEditor({
           </button>
           <button
             type="button"
-            onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 2 }).run()
+            }
             className={`grid size-8 shrink-0 place-items-center rounded-lg ${editor?.isActive('heading', { level: 2 }) ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
             title="Heading 2"
             aria-label="Heading 2"

@@ -320,7 +320,8 @@ export function WhiteboardWorkspace() {
   useEffect(() => {
     const openDiagram = () => setDiagramOpen(true);
     window.addEventListener('flowbase:open-diagram', openDiagram);
-    return () => window.removeEventListener('flowbase:open-diagram', openDiagram);
+    return () =>
+      window.removeEventListener('flowbase:open-diagram', openDiagram);
   }, []);
   const generateDiagram = async () => {
     if (!diagramPrompt.trim()) return;

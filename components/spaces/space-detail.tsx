@@ -250,19 +250,30 @@ function SpaceSettingsDialog({
 }: {
   space: Space;
   onClose: () => void;
-  onSaved: (payload: { name: string; description: string; color: SpaceColor }) => Promise<void>;
+  onSaved: (payload: {
+    name: string;
+    description: string;
+    color: SpaceColor;
+  }) => Promise<void>;
 }) {
   const [name, setName] = useState(space.name);
   const [description, setDescription] = useState(space.description);
   const [color, setColor] = useState<SpaceColor>(
-    SPACE_COLORS[space.color as SpaceColor] ? (space.color as SpaceColor) : 'violet',
+    SPACE_COLORS[space.color as SpaceColor]
+      ? (space.color as SpaceColor)
+      : 'violet',
   );
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/35" />
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/35"
+      />
       <form
         className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl"
         onSubmit={(event) => {
@@ -274,35 +285,71 @@ function SpaceSettingsDialog({
               onClose();
             })
             .catch((reason) =>
-              setError(reason instanceof Error ? reason.message : 'Could not update Space.'),
+              setError(
+                reason instanceof Error
+                  ? reason.message
+                  : 'Could not update Space.',
+              ),
             )
             .finally(() => setSaving(false));
         }}
       >
         <h2 className="text-lg font-semibold">Rename Space</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Update its name, description, or color.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Update its name, description, or color.
+        </p>
         <label className="mt-5 block text-sm font-medium">
           Space name
-          <input autoFocus value={name} onChange={(event) => setName(event.target.value)} className="mt-2 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+          <input
+            autoFocus
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="mt-2 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+          />
         </label>
         <label className="mt-4 block text-sm font-medium">
           Description
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="mt-2 min-h-20 w-full resize-y rounded-xl border border-border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            className="mt-2 min-h-20 w-full resize-y rounded-xl border border-border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+          />
         </label>
         <div className="mt-4">
           <p className="text-sm font-medium">Change color</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {(Object.keys(SPACE_COLORS) as SpaceColor[]).map((item) => (
-              <button key={item} type="button" onClick={() => setColor(item)} aria-label={SPACE_COLORS[item].label} className={`grid size-8 place-items-center rounded-full ${SPACE_COLORS[item].className} ${color === item ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
-                {color === item ? <span className="size-2 rounded-full bg-white" /> : null}
+              <button
+                key={item}
+                type="button"
+                onClick={() => setColor(item)}
+                aria-label={SPACE_COLORS[item].label}
+                className={`grid size-8 place-items-center rounded-full ${SPACE_COLORS[item].className} ${color === item ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+              >
+                {color === item ? (
+                  <span className="size-2 rounded-full bg-white" />
+                ) : null}
               </button>
             ))}
           </div>
         </div>
-        {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+        {error ? (
+          <p className="mt-3 text-sm text-destructive">{error}</p>
+        ) : null}
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-10 rounded-xl px-4 text-sm hover:bg-secondary">Cancel</button>
-          <button disabled={!name.trim() || saving} className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? 'Saving…' : 'Save changes'}</button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 rounded-xl px-4 text-sm hover:bg-secondary"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={!name.trim() || saving}
+            className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
         </div>
       </form>
     </div>
@@ -324,12 +371,12 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
   const inviteMutation = useInviteSpaceCollaborator();
   const space = detailQuery.data?.space ?? null;
   const pages = detailQuery.data?.pages ?? [];
-  const error = detailQuery.error instanceof Error ? detailQuery.error.message : '';
+  const error =
+    detailQuery.error instanceof Error ? detailQuery.error.message : '';
   const pageAction = async (page: Page, body: Record<string, unknown>) => {
     await updatePageMutation.mutateAsync({ spaceId, pageId: page.id, body });
   };
-  if (detailQuery.isLoading)
-    return <WorkspaceLoading />;
+  if (detailQuery.isLoading) return <WorkspaceLoading />;
   if (!space)
     return (
       <div className="grid min-h-80 place-items-center text-sm text-destructive">
@@ -399,14 +446,19 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                   Rename Space
                 </button>
                 <div className="mx-2 my-1 border-t border-border" />
-                <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Change color</p>
+                <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Change color
+                </p>
                 <div className="flex gap-1 px-2.5 pb-2">
                   {(Object.keys(SPACE_COLORS) as SpaceColor[]).map((color) => (
                     <button
                       key={color}
                       type="button"
                       onClick={() =>
-                        void updateSpaceMutation.mutateAsync({ spaceId: space.id, body: { color } })
+                        void updateSpaceMutation.mutateAsync({
+                          spaceId: space.id,
+                          body: { color },
+                        })
                       }
                       aria-label={`Change color to ${SPACE_COLORS[color].label}`}
                       className={`size-5 rounded-full ${SPACE_COLORS[color].className} ${space.color === color ? 'ring-2 ring-primary ring-offset-1' : ''}`}
@@ -438,9 +490,11 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                 <button
                   type="button"
                   onClick={() =>
-                    void duplicateSpaceMutation.mutateAsync(space.id).then(({ item }) =>
-                      router.push(`/dashboard/spaces/${item.id}`),
-                    )
+                    void duplicateSpaceMutation
+                      .mutateAsync(space.id)
+                      .then(({ item }) =>
+                        router.push(`/dashboard/spaces/${item.id}`),
+                      )
                   }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
                 >
@@ -451,7 +505,10 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                   type="button"
                   onClick={() =>
                     void updateSpaceMutation
-                      .mutateAsync({ spaceId: space.id, body: { archived: true } })
+                      .mutateAsync({
+                        spaceId: space.id,
+                        body: { archived: true },
+                      })
                       .then(() => router.push('/dashboard/spaces'))
                   }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
@@ -576,7 +633,11 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
         <PageDialog
           onClose={() => setNewOpen(false)}
           onCreated={async (title, template) => {
-            const { item } = await createPageMutation.mutateAsync({ spaceId, title, template });
+            const { item } = await createPageMutation.mutateAsync({
+              spaceId,
+              title,
+              template,
+            });
             router.push(`/dashboard/spaces/${spaceId}/pages/${item.id}`);
           }}
         />

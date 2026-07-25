@@ -23,6 +23,8 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAiTemplates } from '@/hooks/api/use-ai-templates';
+import { TemplateIcon } from '@/components/templates/template-renderer';
 
 type MenuItem = {
   href: string;
@@ -130,6 +132,18 @@ function NavContent({
 }) {
   const pathname = usePathname();
   const { user } = useUser();
+  const templatesQuery = useAiTemplates<{
+    items: Array<{
+      id: number;
+      appName: string;
+      icon: string;
+      color: string;
+      isInSidebar: boolean;
+    }>;
+  }>();
+  const sidebarTemplates = (templatesQuery.data?.items ?? [])
+    .filter((template) => template.isInSidebar)
+    .slice(0, 3);
   const displayName = user?.fullName ?? user?.firstName ?? 'Your account';
 
   return (
@@ -192,6 +206,45 @@ function NavContent({
             </div>
           </div>
         ))}
+        {sidebarTemplates.length ? (
+          <div className="mt-4">
+            {!collapsed ? (
+              <p className="mb-1 px-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#8b9eb9] dark:text-[#788397]">
+                Your apps
+              </p>
+            ) : (
+              <div className="mx-2 mb-1.5 h-px bg-[#e7eef8] dark:bg-white/10" />
+            )}
+            <div className="space-y-0.5">
+              {sidebarTemplates.map((template) => {
+                const href = `/dashboard/templates/${template.id}`;
+                const active = isActiveRoute(pathname, href);
+                return (
+                  <Link
+                    key={template.id}
+                    href={href}
+                    onClick={onNavigate}
+                    title={collapsed ? template.appName : undefined}
+                    className={`group flex h-8 items-center rounded-md px-2 text-[12px] font-medium transition ${collapsed ? 'justify-center' : 'gap-2'} ${active ? 'bg-[#e4efff] text-[#1461d2]' : 'text-[#68778b] hover:bg-[#eef5ff] hover:text-[#174da8]'}`}
+                  >
+                    <span
+                      className="grid size-5.5 shrink-0 place-items-center rounded-md"
+                      style={{
+                        color: template.color,
+                        backgroundColor: `${template.color}18`,
+                      }}
+                    >
+                      <TemplateIcon name={template.icon} />
+                    </span>
+                    {!collapsed ? (
+                      <span className="truncate">{template.appName}</span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </nav>
 
       <div className="border-t border-[#e8edf4] p-2 dark:border-white/10">

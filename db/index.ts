@@ -4,7 +4,10 @@ import * as schema from '@/db/schema';
 
 const fallbackDatabaseUrl =
   'postgresql://user:password@example.com/flowbase?sslmode=require';
-const rawDatabaseUrl = process.env.DATABASE_URL?.trim().replace(/^['"]|['"]$/g, '');
+const rawDatabaseUrl = process.env.DATABASE_URL?.trim().replace(
+  /^['"]|['"]$/g,
+  '',
+);
 
 function isPostgresUrl(value: string | undefined) {
   if (!value) return false;

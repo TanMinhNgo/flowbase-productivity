@@ -78,8 +78,8 @@ export function ExcalidrawCanvas({
   const initialScene = useRef(sceneFromStrings(scene));
   const current = useRef(initialScene.current);
   const initialBoardId = useRef(boardId);
-  const [hasContent, setHasContent] = useState(
-    () => current.current.elements.some((element) => !element.isDeleted),
+  const [hasContent, setHasContent] = useState(() =>
+    current.current.elements.some((element) => !element.isDeleted),
   );
 
   useEffect(() => {
@@ -289,7 +289,8 @@ export function ExcalidrawCanvas({
               Start shaping your idea
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Draw freely, drop in a note, or let Flowbase turn a prompt into an editable diagram.
+              Draw freely, drop in a note, or let Flowbase turn a prompt into an
+              editable diagram.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               <button
@@ -302,7 +303,9 @@ export function ExcalidrawCanvas({
               </button>
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('flowbase:open-diagram'))}
+                onClick={() =>
+                  window.dispatchEvent(new Event('flowbase:open-diagram'))
+                }
                 className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-semibold hover:bg-secondary"
               >
                 <Sparkles size={15} className="text-primary" />

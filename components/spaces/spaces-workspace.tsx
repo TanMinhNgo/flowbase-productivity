@@ -104,7 +104,9 @@ function SpaceDialog({
   initialSpace?: Space | null;
 }) {
   const [name, setName] = useState(initialSpace?.name ?? '');
-  const [description, setDescription] = useState(initialSpace?.description ?? '');
+  const [description, setDescription] = useState(
+    initialSpace?.description ?? '',
+  );
   const [color, setColor] = useState<Color>(initialSpace?.color ?? 'violet');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -132,9 +134,13 @@ function SpaceDialog({
         }}
         className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl"
       >
-        <h2 className="text-lg font-semibold">{initialSpace ? 'Rename Space' : 'Create a new Space'}</h2>
+        <h2 className="text-lg font-semibold">
+          {initialSpace ? 'Rename Space' : 'Create a new Space'}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {initialSpace ? 'Update the name, description, or color.' : 'A focused home for related Pages and collaborators.'}
+          {initialSpace
+            ? 'Update the name, description, or color.'
+            : 'A focused home for related Pages and collaborators.'}
         </p>
         <label className="mt-5 block text-sm font-medium">
           Space name
@@ -182,7 +188,11 @@ function SpaceDialog({
             disabled={!name.trim() || saving}
             className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {saving ? 'Saving…' : initialSpace ? 'Save changes' : 'Create Space'}
+            {saving
+              ? 'Saving…'
+              : initialSpace
+                ? 'Save changes'
+                : 'Create Space'}
           </button>
         </div>
       </form>
@@ -202,13 +212,17 @@ export function SpacesWorkspace() {
   const [editingSpace, setEditingSpace] = useState<Space | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const spacesQuery = useSpaces<{ items: Space[] }>();
-  const createSpaceMutation = useCreateSpace<Space, { name: string; description: string; color: Color }>();
+  const createSpaceMutation = useCreateSpace<
+    Space,
+    { name: string; description: string; color: Color }
+  >();
   const updateSpaceMutation = useUpdateSpace<Space>();
   const deleteSpaceMutation = useDeleteSpace();
   const duplicateSpaceMutation = useDuplicateSpace<Space>();
   const createPageMutation = useCreateSpacePage<{ id: number }>();
   const spaces = spacesQuery.data?.items ?? [];
-  const error = spacesQuery.error instanceof Error ? spacesQuery.error.message : '';
+  const error =
+    spacesQuery.error instanceof Error ? spacesQuery.error.message : '';
   const isLoading = spacesQuery.isLoading;
 
   const visible = useMemo(
@@ -246,7 +260,11 @@ export function SpacesWorkspace() {
   if (isLoading) return <WorkspaceLoading />;
 
   const create = async (name: string, description: string, color: Color) => {
-    const { item } = await createSpaceMutation.mutateAsync({ name, description, color });
+    const { item } = await createSpaceMutation.mutateAsync({
+      name,
+      description,
+      color,
+    });
     setDialogOpen(false);
     router.push(`/dashboard/spaces/${item.id}`);
   };
@@ -404,7 +422,9 @@ export function SpacesWorkspace() {
                         <Pencil size={15} /> Rename Space
                       </button>
                       <div className="mx-2 my-1 border-t border-border" />
-                      <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Change color</p>
+                      <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Change color
+                      </p>
                       <div className="flex gap-1 px-2.5 pb-2">
                         {(Object.keys(COLORS) as Color[]).map((color) => (
                           <button
@@ -434,7 +454,9 @@ export function SpacesWorkspace() {
                         onClick={() => {
                           void duplicateSpaceMutation
                             .mutateAsync(space.id)
-                            .then(({ item }) => router.push(`/dashboard/spaces/${item.id}`));
+                            .then(({ item }) =>
+                              router.push(`/dashboard/spaces/${item.id}`),
+                            );
                           setActiveMenuId(null);
                         }}
                         className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"

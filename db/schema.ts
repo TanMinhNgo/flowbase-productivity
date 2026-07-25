@@ -157,7 +157,10 @@ export const spaces = pgTable(
   },
   (table) => [
     index('spaces_clerk_id_idx').on(table.clerkId),
-    index('spaces_clerk_id_archived_at_idx').on(table.clerkId, table.archivedAt),
+    index('spaces_clerk_id_archived_at_idx').on(
+      table.clerkId,
+      table.archivedAt,
+    ),
   ],
 );
 
@@ -170,7 +173,10 @@ export const spaceCollaborators = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('space_collaborators_space_user_idx').on(table.spaceId, table.clerkId),
+    uniqueIndex('space_collaborators_space_user_idx').on(
+      table.spaceId,
+      table.clerkId,
+    ),
     index('space_collaborators_clerk_id_idx').on(table.clerkId),
   ],
 );
@@ -196,7 +202,36 @@ export const spacePages = pgTable(
   },
   (table) => [
     index('space_pages_space_id_idx').on(table.spaceId),
-    index('space_pages_space_id_archived_at_idx').on(table.spaceId, table.archivedAt),
+    index('space_pages_space_id_archived_at_idx').on(
+      table.spaceId,
+      table.archivedAt,
+    ),
+  ],
+);
+
+export const aiTemplates = pgTable(
+  'ai_templates',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    prompt: text('prompt').notNull(),
+    appName: text('app_name').notNull(),
+    description: text('description').notNull().default(''),
+    icon: text('icon').notNull().default('LayoutTemplate'),
+    color: text('color').notNull().default('#7c5ce0'),
+    layout: text('layout').notNull().default('single-page'),
+    appJson: text('app_json').notNull(),
+    runtimeData: text('runtime_data').notNull().default('{}'),
+    isInSidebar: boolean('is_in_sidebar').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('ai_templates_clerk_id_idx').on(table.clerkId),
+    index('ai_templates_clerk_id_sidebar_idx').on(
+      table.clerkId,
+      table.isInSidebar,
+    ),
   ],
 );
 
@@ -212,3 +247,5 @@ export type Space = typeof spaces.$inferSelect;
 export type NewSpace = typeof spaces.$inferInsert;
 export type SpacePage = typeof spacePages.$inferSelect;
 export type NewSpacePage = typeof spacePages.$inferInsert;
+export type AiTemplate = typeof aiTemplates.$inferSelect;
+export type NewAiTemplate = typeof aiTemplates.$inferInsert;
