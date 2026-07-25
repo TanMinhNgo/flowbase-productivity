@@ -55,7 +55,7 @@ export function WorkspaceLoading({
       </div>
     );
   return (
-    <div className="mx-auto max-w-[1400px] pb-10">
+    <div className="mx-auto max-w-350 pb-10">
       <div className="flex items-end justify-between">
         <div>
           <Skeleton className="h-9 w-40" />

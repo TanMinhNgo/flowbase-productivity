@@ -169,7 +169,7 @@ function NavContent({
       </div>
 
       <nav
-        className="flex-1 overflow-y-auto px-2 py-3"
+        className="flex-1 overflow-hidden px-2 py-2"
         aria-label="Workspace navigation"
       >
         {menuGroups.map((group, groupIndex) => (
@@ -207,7 +207,7 @@ function NavContent({
           </div>
         ))}
         {sidebarTemplates.length ? (
-          <div className="mt-4">
+          <div className="mt-3">
             {!collapsed ? (
               <p className="mb-1 px-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#8b9eb9] dark:text-[#788397]">
                 Your apps
