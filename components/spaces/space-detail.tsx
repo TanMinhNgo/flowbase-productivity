@@ -29,6 +29,7 @@ type Page = {
   updatedAt: string;
   updatedByUser: { name: string | null; imageUrl: string | null };
 };
+type PageMutation = Omit<Page, 'updatedByUser'>;
 type Space = {
   id: number;
   name: string;
@@ -350,15 +351,19 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
     void load();
   }, [spaceId]);
   const pageAction = async (page: Page, body: Record<string, unknown>) => {
-    const data = await request<{ item: Page }>(
+    const data = await request<{ item: PageMutation }>(
       `/api/spaces/${spaceId}/pages/${page.id}`,
       { method: 'PATCH', body: JSON.stringify(body) },
     );
-    if (body.duplicate) setPages((current) => [data.item, ...current]);
+    const item: Page = {
+      ...data.item,
+      updatedByUser: page.updatedByUser ?? { name: 'You', imageUrl: null },
+    };
+    if (body.duplicate) setPages((current) => [item, ...current]);
     else
       setPages((current) =>
         current.map((entry) =>
-          entry.id === page.id ? { ...entry, ...data.item } : entry,
+          entry.id === page.id ? { ...entry, ...item } : entry,
         ),
       );
   };
@@ -371,7 +376,7 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
       </div>
     );
   return (
-    <section className="mx-auto max-w-[1320px] pb-10">
+    <section className="mx-auto max-w-330 pb-10">
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <Link href="/dashboard/spaces" className="hover:text-primary">
           All Spaces
@@ -385,7 +390,7 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
             <Folder size={23} />
           </span>
           <div>
-            <h1 className="text-3xl font-semibold tracking-[-0.05em]">
+            <h1 className="text-3xl font-semibold tracking-tighter">
               {space.name}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -551,9 +556,9 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
               </span>
               <span className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="grid size-6 place-items-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
-                  {(page.updatedByUser.name ?? '?').slice(0, 2).toUpperCase()}
+                  {(page.updatedByUser?.name ?? '?').slice(0, 2).toUpperCase()}
                 </span>
-                {page.updatedByUser.name ?? 'You'}
+                {page.updatedByUser?.name ?? 'You'}
               </span>
               <div className="flex justify-end gap-1">
                 <button
