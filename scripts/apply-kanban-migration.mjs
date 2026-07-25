@@ -19,6 +19,7 @@ const migrations = [
   '0006_spaces.sql',
   '0007_ai_templates.sql',
   '0008_settings.sql',
+  '0009_ai_assistant.sql',
 ];
 let appliedStatements = 0;
 

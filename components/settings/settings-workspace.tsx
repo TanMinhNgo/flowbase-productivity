@@ -219,6 +219,7 @@ export function SettingsWorkspace() {
   );
 
   useEffect(() => {
+    if (!clerk.billing?.getSubscription) return;
     void clerk.billing
       .getSubscription({})
       .then((subscription) => {

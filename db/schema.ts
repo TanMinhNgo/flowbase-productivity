@@ -300,6 +300,47 @@ export const monthlyUsage = pgTable(
   ],
 );
 
+export const assistantConversations = pgTable(
+  'assistant_conversations',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    title: text('title').notNull().default('New conversation'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [index('assistant_conversations_user_idx').on(table.clerkId)],
+);
+export const assistantMessages = pgTable(
+  'assistant_messages',
+  {
+    id: serial('id').primaryKey(),
+    conversationId: integer('conversation_id').notNull(),
+    role: text('role').notNull(),
+    content: text('content').notNull(),
+    actionJson: text('action_json'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('assistant_messages_conversation_idx').on(table.conversationId),
+  ],
+);
+export const assistantActions = pgTable(
+  'assistant_actions',
+  {
+    id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').notNull(),
+    conversationId: integer('conversation_id').notNull(),
+    type: text('type').notNull(),
+    payload: text('payload').notNull(),
+    status: text('status').notNull().default('pending'),
+    result: text('result'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [index('assistant_actions_user_idx').on(table.clerkId)],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CalendarItem = typeof calendarItems.$inferSelect;
