@@ -17,8 +17,17 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { WorkspaceLoading } from '@/components/ui/workspace-loading';
+import {
+  useCreateSpacePage,
+  useDeleteSpace,
+  useDuplicateSpace,
+  useInviteSpaceCollaborator,
+  useSpace,
+  useUpdateSpace,
+  useUpdateSpacePage,
+} from '@/hooks/api/use-spaces';
 
 type Page = {
   id: number;
@@ -62,18 +71,6 @@ const templates = [
   'Research Notes',
   'Task Plan',
 ];
-async function request<T = { item: Space }>(
-  url: string,
-  options?: RequestInit,
-) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  });
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error ?? 'Request failed.');
-  return data;
-}
 const relative = (value: string) => {
   const minutes = Math.round((Date.now() - new Date(value).getTime()) / 60000);
   return minutes < 1
@@ -89,13 +86,11 @@ const relative = (value: string) => {
 };
 
 function PageDialog({
-  spaceId,
   onClose,
   onCreated,
 }: {
-  spaceId: number;
   onClose: () => void;
-  onCreated: (page: Page) => void;
+  onCreated: (title: string, template: string) => Promise<void>;
 }) {
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState('Blank Page');
@@ -113,12 +108,8 @@ function PageDialog({
         onSubmit={(event) => {
           event.preventDefault();
           setSaving(true);
-          void request<{ item: Page }>(`/api/spaces/${spaceId}/pages`, {
-            method: 'POST',
-            body: JSON.stringify({ title, template }),
-          })
-            .then(({ item }) => {
-              onCreated(item);
+          void onCreated(title, template)
+            .then(() => {
               onClose();
             })
             .catch((reason) =>
@@ -181,11 +172,11 @@ function PageDialog({
 }
 
 function InviteDialog({
-  spaceId,
   onClose,
+  onInvite,
 }: {
-  spaceId: number;
   onClose: () => void;
+  onInvite: (email: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -202,10 +193,7 @@ function InviteDialog({
         onSubmit={(event) => {
           event.preventDefault();
           setSaving(true);
-          void request(`/api/spaces/${spaceId}/collaborators`, {
-            method: 'POST',
-            body: JSON.stringify({ email }),
-          })
+          void onInvite(email)
             .then(onClose)
             .catch((reason) =>
               setError(
@@ -262,7 +250,7 @@ function SpaceSettingsDialog({
 }: {
   space: Space;
   onClose: () => void;
-  onSaved: (space: Space) => void;
+  onSaved: (payload: { name: string; description: string; color: SpaceColor }) => Promise<void>;
 }) {
   const [name, setName] = useState(space.name);
   const [description, setDescription] = useState(space.description);
@@ -281,12 +269,8 @@ function SpaceSettingsDialog({
           event.preventDefault();
           setSaving(true);
           setError('');
-          void request<{ item: Space }>(`/api/spaces/${space.id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ name, description, color }),
-          })
-            .then(({ item }) => {
-              onSaved(item);
+          void onSaved({ name, description, color })
+            .then(() => {
               onClose();
             })
             .catch((reason) =>
@@ -327,47 +311,24 @@ function SpaceSettingsDialog({
 
 export function SpaceDetail({ spaceId }: { spaceId: number }) {
   const router = useRouter();
-  const [space, setSpace] = useState<Space | null>(null);
-  const [pages, setPages] = useState<Page[]>([]);
   const [newOpen, setNewOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [error, setError] = useState('');
-  const load = async () => {
-    try {
-      const data = await request<{ space: Space; pages: Page[] }>(
-        `/api/spaces/${spaceId}`,
-      );
-      setSpace(data.space);
-      setPages(data.pages);
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : 'Could not load this space.',
-      );
-    }
-  };
-  useEffect(() => {
-    void load();
-  }, [spaceId]);
+  const detailQuery = useSpace<{ space: Space; pages: Page[] }>(spaceId);
+  const updateSpaceMutation = useUpdateSpace<Space>();
+  const deleteSpaceMutation = useDeleteSpace();
+  const duplicateSpaceMutation = useDuplicateSpace<Space>();
+  const createPageMutation = useCreateSpacePage<Page>();
+  const updatePageMutation = useUpdateSpacePage<PageMutation>();
+  const inviteMutation = useInviteSpaceCollaborator();
+  const space = detailQuery.data?.space ?? null;
+  const pages = detailQuery.data?.pages ?? [];
+  const error = detailQuery.error instanceof Error ? detailQuery.error.message : '';
   const pageAction = async (page: Page, body: Record<string, unknown>) => {
-    const data = await request<{ item: PageMutation }>(
-      `/api/spaces/${spaceId}/pages/${page.id}`,
-      { method: 'PATCH', body: JSON.stringify(body) },
-    );
-    const item: Page = {
-      ...data.item,
-      updatedByUser: page.updatedByUser ?? { name: 'You', imageUrl: null },
-    };
-    if (body.duplicate) setPages((current) => [item, ...current]);
-    else
-      setPages((current) =>
-        current.map((entry) =>
-          entry.id === page.id ? { ...entry, ...item } : entry,
-        ),
-      );
+    await updatePageMutation.mutateAsync({ spaceId, pageId: page.id, body });
   };
-  if (!space && !error)
+  if (detailQuery.isLoading)
     return <WorkspaceLoading />;
   if (!space)
     return (
@@ -445,10 +406,7 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                       key={color}
                       type="button"
                       onClick={() =>
-                        void request<{ item: Space }>(`/api/spaces/${space.id}`, {
-                          method: 'PATCH',
-                          body: JSON.stringify({ color }),
-                        }).then(({ item }) => setSpace((current) => current ? { ...current, ...item } : item))
+                        void updateSpaceMutation.mutateAsync({ spaceId: space.id, body: { color } })
                       }
                       aria-label={`Change color to ${SPACE_COLORS[color].label}`}
                       className={`size-5 rounded-full ${SPACE_COLORS[color].className} ${space.color === color ? 'ring-2 ring-primary ring-offset-1' : ''}`}
@@ -480,10 +438,7 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                 <button
                   type="button"
                   onClick={() =>
-                    void request(`/api/spaces/${space.id}`, {
-                      method: 'PATCH',
-                      body: JSON.stringify({ duplicate: true }),
-                    }).then(({ item }: { item: Space }) =>
+                    void duplicateSpaceMutation.mutateAsync(space.id).then(({ item }) =>
                       router.push(`/dashboard/spaces/${item.id}`),
                     )
                   }
@@ -495,10 +450,9 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                 <button
                   type="button"
                   onClick={() =>
-                    void request(`/api/spaces/${space.id}`, {
-                      method: 'PATCH',
-                      body: JSON.stringify({ archived: true }),
-                    }).then(() => router.push('/dashboard/spaces'))
+                    void updateSpaceMutation
+                      .mutateAsync({ spaceId: space.id, body: { archived: true } })
+                      .then(() => router.push('/dashboard/spaces'))
                   }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
                 >
@@ -509,9 +463,9 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
                   type="button"
                   onClick={() => {
                     if (window.confirm(`Delete ${space.name}?`))
-                      void request(`/api/spaces/${space.id}`, {
-                        method: 'DELETE',
-                      }).then(() => router.push('/dashboard/spaces'));
+                      void deleteSpaceMutation
+                        .mutateAsync(space.id)
+                        .then(() => router.push('/dashboard/spaces'));
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
                 >
@@ -620,25 +574,28 @@ export function SpaceDetail({ spaceId }: { spaceId: number }) {
       </div>
       {newOpen ? (
         <PageDialog
-          spaceId={spaceId}
           onClose={() => setNewOpen(false)}
-          onCreated={(page) => {
-            setPages((current) => [
-              { ...page, updatedByUser: { name: 'You', imageUrl: null } },
-              ...current,
-            ]);
-            router.push(`/dashboard/spaces/${spaceId}/pages/${page.id}`);
+          onCreated={async (title, template) => {
+            const { item } = await createPageMutation.mutateAsync({ spaceId, title, template });
+            router.push(`/dashboard/spaces/${spaceId}/pages/${item.id}`);
           }}
         />
       ) : null}
       {inviteOpen ? (
-        <InviteDialog spaceId={spaceId} onClose={() => setInviteOpen(false)} />
+        <InviteDialog
+          onClose={() => setInviteOpen(false)}
+          onInvite={async (email) => {
+            await inviteMutation.mutateAsync({ spaceId, email });
+          }}
+        />
       ) : null}
       {settingsOpen ? (
         <SpaceSettingsDialog
           space={space}
           onClose={() => setSettingsOpen(false)}
-          onSaved={setSpace}
+          onSaved={async (body) => {
+            await updateSpaceMutation.mutateAsync({ spaceId: space.id, body });
+          }}
         />
       ) : null}
     </section>

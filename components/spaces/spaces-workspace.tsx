@@ -15,9 +15,17 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { WorkspaceLoading } from '@/components/ui/workspace-loading';
+import {
+  useCreateSpace,
+  useCreateSpacePage,
+  useDeleteSpace,
+  useDuplicateSpace,
+  useSpaces,
+  useUpdateSpace,
+} from '@/hooks/api/use-spaces';
 
 type Color = 'coral' | 'apricot' | 'rose' | 'violet' | 'sky' | 'mint';
 type Profile = {
@@ -56,15 +64,6 @@ const relativeTime = (value: string) => {
         ? `Updated ${Math.floor(minutes / 60)}h ago`
         : `Updated ${new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(value))}`;
 };
-async function request<T>(url: string, options?: RequestInit) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  });
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error ?? 'Request failed.');
-  return data;
-}
 
 function AvatarStack({ members }: { members: Profile[] }) {
   return (
@@ -193,7 +192,6 @@ function SpaceDialog({
 
 export function SpacesWorkspace() {
   const router = useRouter();
-  const [spaces, setSpaces] = useState<Space[]>([]);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'all' | 'favorites' | 'recent' | 'archived'>(
     'all',
@@ -203,22 +201,15 @@ export function SpacesWorkspace() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSpace, setEditingSpace] = useState<Space | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const load = async () => {
-    try {
-      setSpaces((await request<{ items: Space[] }>('/api/spaces')).items);
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : 'Could not load spaces.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  useEffect(() => {
-    void load();
-  }, []);
+  const spacesQuery = useSpaces<{ items: Space[] }>();
+  const createSpaceMutation = useCreateSpace<Space, { name: string; description: string; color: Color }>();
+  const updateSpaceMutation = useUpdateSpace<Space>();
+  const deleteSpaceMutation = useDeleteSpace();
+  const duplicateSpaceMutation = useDuplicateSpace<Space>();
+  const createPageMutation = useCreateSpacePage<{ id: number }>();
+  const spaces = spacesQuery.data?.items ?? [];
+  const error = spacesQuery.error instanceof Error ? spacesQuery.error.message : '';
+  const isLoading = spacesQuery.isLoading;
 
   const visible = useMemo(
     () =>
@@ -255,32 +246,19 @@ export function SpacesWorkspace() {
   if (isLoading) return <WorkspaceLoading />;
 
   const create = async (name: string, description: string, color: Color) => {
-    const { item } = await request<{ item: Space }>('/api/spaces', {
-      method: 'POST',
-      body: JSON.stringify({ name, description, color }),
-    });
+    const { item } = await createSpaceMutation.mutateAsync({ name, description, color });
     setDialogOpen(false);
     router.push(`/dashboard/spaces/${item.id}`);
   };
   const update = async (space: Space, body: Record<string, unknown>) => {
-    const { item } = await request<{ item: Space }>(`/api/spaces/${space.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    });
-    setSpaces((current) =>
-      current.map((entry) =>
-        entry.id === item.id ? { ...entry, ...item } : entry,
-      ),
-    );
+    return updateSpaceMutation.mutateAsync({ spaceId: space.id, body });
   };
   const createPage = async (space: Space) => {
-    const { item } = await request<{ item: { id: number } }>(
-      `/api/spaces/${space.id}/pages`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ title: 'Untitled page', template: 'Blank Page' }),
-      },
-    );
+    const { item } = await createPageMutation.mutateAsync({
+      spaceId: space.id,
+      title: 'Untitled page',
+      template: 'Blank Page',
+    });
     router.push(`/dashboard/spaces/${space.id}/pages/${item.id}`);
   };
   return (
@@ -454,28 +432,43 @@ export function SpacesWorkspace() {
                       <button
                         type="button"
                         onClick={() => {
-                          void request<{ item: Space }>(`/api/spaces/${space.id}`, { method: 'PATCH', body: JSON.stringify({ duplicate: true }) }).then(({ item }) => router.push(`/dashboard/spaces/${item.id}`));
+                          void duplicateSpaceMutation
+                            .mutateAsync(space.id)
+                            .then(({ item }) => router.push(`/dashboard/spaces/${item.id}`));
                           setActiveMenuId(null);
                         }}
                         className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
                       >
                         <Copy size={15} /> Duplicate
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void update(space, { archived: true });
-                          setActiveMenuId(null);
-                        }}
-                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
-                      >
-                        <Archive size={15} /> Archive
-                      </button>
+                      {space.archivedAt ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void update(space, { archived: false });
+                            setActiveMenuId(null);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                        >
+                          <Archive size={15} /> Restore
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void update(space, { archived: true });
+                            setActiveMenuId(null);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                        >
+                          <Archive size={15} /> Archive
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
                           if (window.confirm(`Delete ${space.name}?`)) {
-                            void request(`/api/spaces/${space.id}`, { method: 'DELETE' }).then(() => setSpaces((current) => current.filter((item) => item.id !== space.id)));
+                            void deleteSpaceMutation.mutateAsync(space.id);
                           }
                           setActiveMenuId(null);
                         }}

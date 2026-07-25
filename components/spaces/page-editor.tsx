@@ -33,6 +33,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WorkspaceLoading } from '@/components/ui/workspace-loading';
+import {
+  useDeleteSpacePage,
+  useSpacePage,
+  useUpdateSpacePage,
+} from '@/hooks/api/use-spaces';
 
 type Page = {
   id: number;
@@ -46,15 +51,6 @@ type Page = {
   updatedBy: string;
 };
 type Space = { id: number; name: string };
-async function request<T>(url: string, options?: RequestInit) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  });
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error ?? 'Request failed.');
-  return data;
-}
 const emptyDoc = { type: 'doc', content: [{ type: 'paragraph' }] };
 
 export function SpacePageEditor({
@@ -65,29 +61,32 @@ export function SpacePageEditor({
   pageId: number;
 }) {
   const router = useRouter();
-  const [page, setPage] = useState<Page | null>(null);
-  const [space, setSpace] = useState<Space | null>(null);
   const [status, setStatus] = useState<
     'loading' | 'saved' | 'saving' | 'error'
   >('loading');
+  const [draftPage, setDraftPage] = useState<Page | null>(null);
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pageRef = useRef<Page | null>(null);
   const loadedEditorPageId = useRef<number | null>(null);
+  const pageQuery = useSpacePage<{ page: Page; space: Space }>(spaceId, pageId);
+  const updatePageMutation = useUpdateSpacePage<Page>();
+  const deletePageMutation = useDeleteSpacePage();
+  const serverPage = pageQuery.data?.page ?? null;
+  const page = draftPage ?? serverPage;
+  const space = pageQuery.data?.space ?? null;
   const patch = useCallback(
     async (body: Record<string, unknown>) => {
-      const data = await request<{ item: Page }>(
-        `/api/spaces/${spaceId}/pages/${pageId}`,
-        { method: 'PATCH', body: JSON.stringify(body) },
-      );
-      setPage((current) =>
-        current ? { ...current, ...data.item } : data.item,
-      );
-      return data.item;
+      const result = await updatePageMutation.mutateAsync({ spaceId, pageId, body });
+      setDraftPage((current) => (current ? { ...current, ...result.item } : result.item));
+      return result.item;
     },
-    [spaceId, pageId],
+    [spaceId, pageId, updatePageMutation],
   );
+  useEffect(() => {
+    if (serverPage) setDraftPage(serverPage);
+  }, [serverPage]);
   useEffect(() => {
     pageRef.current = page;
   }, [page]);
@@ -129,27 +128,15 @@ export function SpacePageEditor({
     },
   });
   useEffect(() => {
-    void request<{
-      page: Page;
-      space: Space;
-      commentsCount: number;
-      linkedTasksCount: number;
-    }>(`/api/spaces/${spaceId}/pages/${pageId}`)
-      .then((data) => {
-        setPage(data.page);
-        setSpace(data.space);
-        setStatus('saved');
-      })
-      .catch((reason) => {
-        setStatus('error');
-        setError(
-          reason instanceof Error ? reason.message : 'Could not load Page.',
-        );
-      });
+    if (pageQuery.isSuccess) setStatus('saved');
+    if (pageQuery.error instanceof Error) {
+      setStatus('error');
+      setError(pageQuery.error.message);
+    }
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [spaceId, pageId]);
+  }, [pageQuery.error, pageQuery.isSuccess]);
   useEffect(() => {
     if (!editor || !page || loadedEditorPageId.current === page.id) return;
     loadedEditorPageId.current = page.id;
@@ -221,9 +208,7 @@ export function SpacePageEditor({
                   type="button"
                   onClick={() =>
                     void patch({ duplicate: true }).then((copy) =>
-                      router.push(
-                        `/dashboard/spaces/${spaceId}/pages/${copy.id}`,
-                      ),
+                      router.push(`/dashboard/spaces/${spaceId}/pages/${copy.id}`),
                     )
                   }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
@@ -263,9 +248,7 @@ export function SpacePageEditor({
                   type="button"
                   onClick={() => {
                     if (window.confirm(`Delete ${page.title}?`))
-                      void request(`/api/spaces/${spaceId}/pages/${pageId}`, {
-                        method: 'DELETE',
-                      }).then(() =>
+                      void deletePageMutation.mutateAsync({ spaceId, pageId }).then(() =>
                         router.push(`/dashboard/spaces/${spaceId}`),
                       );
                   }}
@@ -282,7 +265,7 @@ export function SpacePageEditor({
           <input
             value={page.title}
             onChange={(event) =>
-              setPage({ ...page, title: event.target.value })
+              setDraftPage({ ...page, title: event.target.value })
             }
             onBlur={(event) => {
               if (event.target.value.trim())
@@ -294,7 +277,7 @@ export function SpacePageEditor({
           <textarea
             value={page.description}
             onChange={(event) =>
-              setPage({ ...page, description: event.target.value })
+              setDraftPage({ ...page, description: event.target.value })
             }
             onBlur={(event) => void patch({ description: event.target.value })}
             placeholder="Add a short description"
