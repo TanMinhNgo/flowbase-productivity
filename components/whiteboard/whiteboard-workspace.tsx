@@ -265,7 +265,6 @@ export function WhiteboardWorkspace() {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [load]);
-  if (status === 'loading') return <WorkspaceLoading variant="canvas" />;
 
   const patch = useCallback(
     async (id: number, body: Record<string, unknown>) => {
@@ -347,6 +346,11 @@ export function WhiteboardWorkspace() {
       setDiagramBusy(false);
     }
   };
+
+  // Keep every hook above this branch. Returning while the request is loading
+  // would make the next render call additional hooks and trigger React #310.
+  if (status === 'loading') return <WorkspaceLoading variant="canvas" />;
+
   const list = (
     <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
       {boards.length ? (
