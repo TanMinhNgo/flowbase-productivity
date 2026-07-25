@@ -1,18 +1,17 @@
 'use client';
 
-import CharacterCount from '@tiptap/extension-character-count';
-import Highlight from '@tiptap/extension-highlight';
-import Placeholder from '@tiptap/extension-placeholder';
-import TaskItem from '@tiptap/extension-task-item';
-import TaskList from '@tiptap/extension-task-list';
-import Underline from '@tiptap/extension-underline';
+import { CharacterCount } from '@tiptap/extension-character-count';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Placeholder } from '@tiptap/extension-placeholder';
+import { TaskItem } from '@tiptap/extension-task-item';
+import { TaskList } from '@tiptap/extension-task-list';
 import { BubbleMenu } from '@tiptap/react/menus';
 import {
   EditorContent,
   type Editor as TiptapEditor,
   useEditor,
 } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import { StarterKit } from '@tiptap/starter-kit';
 import {
   ArchiveRestore,
   Bold,
@@ -183,7 +182,6 @@ function Editor({
     immediatelyRender: false,
     extensions: [
       StarterKit,
-      Underline,
       Highlight.configure({ multicolor: false }),
       TaskList,
       TaskItem.configure({ nested: true }),

@@ -1,13 +1,18 @@
 'use client';
 
 import {
+  Archive,
+  Copy,
+  FilePlus2,
   Folder,
   Grid2X2,
   LayoutList,
   MoreHorizontal,
+  Pencil,
   Plus,
   Search,
   Star,
+  Trash2,
   Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -93,13 +98,15 @@ function AvatarStack({ members }: { members: Profile[] }) {
 function SpaceDialog({
   onClose,
   onCreate,
+  initialSpace,
 }: {
   onClose: () => void;
   onCreate: (name: string, description: string, color: Color) => Promise<void>;
+  initialSpace?: Space | null;
 }) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState<Color>('violet');
+  const [name, setName] = useState(initialSpace?.name ?? '');
+  const [description, setDescription] = useState(initialSpace?.description ?? '');
+  const [color, setColor] = useState<Color>(initialSpace?.color ?? 'violet');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   return (
@@ -126,9 +133,9 @@ function SpaceDialog({
         }}
         className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl"
       >
-        <h2 className="text-lg font-semibold">Create a new Space</h2>
+        <h2 className="text-lg font-semibold">{initialSpace ? 'Rename Space' : 'Create a new Space'}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          A focused home for related Pages and collaborators.
+          {initialSpace ? 'Update the name, description, or color.' : 'A focused home for related Pages and collaborators.'}
         </p>
         <label className="mt-5 block text-sm font-medium">
           Space name
@@ -176,7 +183,7 @@ function SpaceDialog({
             disabled={!name.trim() || saving}
             className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {saving ? 'Creating…' : 'Create Space'}
+            {saving ? 'Saving…' : initialSpace ? 'Save changes' : 'Create Space'}
           </button>
         </div>
       </form>
@@ -194,6 +201,8 @@ export function SpacesWorkspace() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState('updated');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingSpace, setEditingSpace] = useState<Space | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const load = async () => {
@@ -263,6 +272,16 @@ export function SpacesWorkspace() {
         entry.id === item.id ? { ...entry, ...item } : entry,
       ),
     );
+  };
+  const createPage = async (space: Space) => {
+    const { item } = await request<{ item: { id: number } }>(
+      `/api/spaces/${space.id}/pages`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ title: 'Untitled page', template: 'Blank Page' }),
+      },
+    );
+    router.push(`/dashboard/spaces/${space.id}/pages/${item.id}`);
   };
   return (
     <section className="mx-auto max-w-350 animate-[rise_500ms_cubic-bezier(0.16,1,0.3,1)_both] pb-10">
@@ -384,10 +403,88 @@ export function SpacesWorkspace() {
                   </button>
                   <button
                     type="button"
+                    onClick={() =>
+                      setActiveMenuId((current) =>
+                        current === space.id ? null : space.id,
+                      )
+                    }
                     className="relative z-10 grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-secondary"
+                    aria-label={`Actions for ${space.name}`}
                   >
                     <MoreHorizontal size={16} />
                   </button>
+                  {activeMenuId === space.id ? (
+                    <div className="absolute right-0 top-9 z-30 w-52 rounded-xl border border-border bg-card p-1.5 shadow-xl">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingSpace(space);
+                          setActiveMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                      >
+                        <Pencil size={15} /> Rename Space
+                      </button>
+                      <div className="mx-2 my-1 border-t border-border" />
+                      <p className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Change color</p>
+                      <div className="flex gap-1 px-2.5 pb-2">
+                        {(Object.keys(COLORS) as Color[]).map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            aria-label={`Change color to ${color}`}
+                            onClick={() => {
+                              void update(space, { color });
+                              setActiveMenuId(null);
+                            }}
+                            className={`size-5 rounded-full ${COLORS[color]} ${space.color === color ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void createPage(space);
+                          setActiveMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-2 text-left text-sm font-medium text-primary hover:bg-primary/15"
+                      >
+                        <FilePlus2 size={15} /> Add Page
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void request<{ item: Space }>(`/api/spaces/${space.id}`, { method: 'PATCH', body: JSON.stringify({ duplicate: true }) }).then(({ item }) => router.push(`/dashboard/spaces/${item.id}`));
+                          setActiveMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                      >
+                        <Copy size={15} /> Duplicate
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void update(space, { archived: true });
+                          setActiveMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-secondary"
+                      >
+                        <Archive size={15} /> Archive
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Delete ${space.name}?`)) {
+                            void request(`/api/spaces/${space.id}`, { method: 'DELETE' }).then(() => setSpaces((current) => current.filter((item) => item.id !== space.id)));
+                          }
+                          setActiveMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 size={15} /> Delete
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
                 <p className="mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-muted-foreground">
                   {space.description || 'No description yet.'}
@@ -436,6 +533,16 @@ export function SpacesWorkspace() {
       )}
       {dialogOpen ? (
         <SpaceDialog onClose={() => setDialogOpen(false)} onCreate={create} />
+      ) : null}
+      {editingSpace ? (
+        <SpaceDialog
+          initialSpace={editingSpace}
+          onClose={() => setEditingSpace(null)}
+          onCreate={async (name, description, color) => {
+            await update(editingSpace, { name, description, color });
+            setEditingSpace(null);
+          }}
+        />
       ) : null}
     </section>
   );
